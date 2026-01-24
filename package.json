@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "process-inbox": "ts-node agents/process-inbox.ts"
+    "process-inbox": "ts-node agents/process-inbox.ts",
+    "watch-folder": "ts-node agents/folder-watcher.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

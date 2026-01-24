@@ -22,6 +22,8 @@ import {
   Archive,
   Pencil,
   Link as LinkIcon,
+  Maximize2,
+  FileText,
 } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import {
@@ -513,6 +515,7 @@ export default function FleetingPage() {
   });
   const [filterProject, setFilterProject] = useState<string | null>(null);
   const [showProjects, setShowProjects] = useState(true);
+  const [expandedInput, setExpandedInput] = useState(false);
 
   const supabase = createClient();
 
@@ -590,15 +593,23 @@ export default function FleetingPage() {
     const urlMatch = newThought.match(/^(https?:\/\/[^\s]+)$/);
     const isUrl = !!urlMatch;
 
+    // Check if it looks like markdown (has headers, bullets, code blocks, etc.)
+    const isMarkdown = /^#|^\s*[-*]\s|```|^\s*\d+\.\s/.test(newThought);
+
+    // Determine content type
+    let contentType: 'text' | 'link' | 'voice' | 'image' | 'pdf' = 'text';
+    if (isUrl) contentType = 'link';
+
     const { data, error } = await supabase
       .from("fleeting_thoughts")
       .insert({
         content: newThought,
         user_id: user.id,
-        content_type: isUrl ? "link" : "text",
+        content_type: contentType,
         source: "manual",
         status: "inbox",
         url: isUrl ? newThought : null,
+        tags: isMarkdown ? ['spec', 'markdown'] : null,
       })
       .select()
       .single();
@@ -606,6 +617,7 @@ export default function FleetingPage() {
     if (data && !error) {
       setThoughts([data, ...thoughts]);
       setNewThought("");
+      setExpandedInput(false);
     }
     setAdding(false);
   }
@@ -895,14 +907,23 @@ export default function FleetingPage() {
 
             {/* Quick Add */}
             <div className="mt-6 flex gap-3">
-              <input
-                type="text"
-                placeholder="Quick capture a thought or paste a URL..."
-                value={newThought}
-                onChange={(e) => setNewThought(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addThought()}
-                className="flex-1 p-3 rounded bg-zinc-900 border border-zinc-800 text-zinc-50 focus:outline-none focus:border-zinc-600"
-              />
+              <div className="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Quick capture a thought, paste a URL or markdown..."
+                  value={newThought}
+                  onChange={(e) => setNewThought(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && addThought()}
+                  className="w-full p-3 pr-10 rounded bg-zinc-900 border border-zinc-800 text-zinc-50 focus:outline-none focus:border-zinc-600"
+                />
+                <button
+                  onClick={() => setExpandedInput(true)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-zinc-800 rounded text-zinc-400 hover:text-zinc-200"
+                  title="Expand for markdown"
+                >
+                  <Maximize2 size={18} />
+                </button>
+              </div>
               <Button
                 onClick={addThought}
                 disabled={adding || !newThought.trim()}
@@ -911,6 +932,47 @@ export default function FleetingPage() {
                 {adding ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
               </Button>
             </div>
+
+            {/* Expanded Markdown Input Modal */}
+            {expandedInput && (
+              <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                <div className="bg-zinc-900 rounded-lg w-full max-w-3xl">
+                  <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                      <FileText size={20} />
+                      Paste Markdown / Spec
+                    </h2>
+                    <button onClick={() => setExpandedInput(false)} className="p-1 hover:bg-zinc-800 rounded">
+                      <X size={20} />
+                    </button>
+                  </div>
+                  <div className="p-4">
+                    <textarea
+                      value={newThought}
+                      onChange={(e) => setNewThought(e.target.value)}
+                      placeholder="Paste your markdown spec, notes, or any longer content here..."
+                      className="w-full h-80 p-4 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 font-mono text-sm"
+                      autoFocus
+                    />
+                    <p className="mt-2 text-xs text-zinc-500">
+                      Supports markdown formatting. Content with headers, bullets, or code blocks will be auto-tagged as specs.
+                    </p>
+                  </div>
+                  <div className="flex justify-end gap-2 p-4 border-t border-zinc-800">
+                    <Button variant="outline" onClick={() => setExpandedInput(false)} className="border-zinc-700">
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={addThought}
+                      disabled={adding || !newThought.trim()}
+                      className="bg-white text-zinc-950 hover:bg-zinc-200"
+                    >
+                      {adding ? <Loader2 className="animate-spin" size={20} /> : "Add to Inbox"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Stats */}
             <div className="mt-4 flex gap-4 text-sm text-zinc-500">
