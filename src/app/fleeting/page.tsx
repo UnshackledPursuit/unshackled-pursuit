@@ -1165,16 +1165,49 @@ export default function FleetingPage() {
   }
 
   async function updateThought(id: string, updates: Partial<Thought>) {
+    const thought = thoughts.find(t => t.id === id);
+
+    // Auto-move logic based on priority and other triggers
+    let autoStatus: ColumnId | null = null;
+    let statusMessage = "";
+
+    if (thought) {
+      // High priority in inbox → move to processing
+      if (updates.priority === "high" && thought.status === "inbox") {
+        autoStatus = "processing";
+        statusMessage = "High priority → Processing";
+      }
+      // Setting a project while in inbox → move to processing
+      else if (updates.project_id && !thought.project_id && thought.status === "inbox") {
+        autoStatus = "processing";
+        statusMessage = "Project assigned → Processing";
+      }
+      // Setting a destination → move to routed
+      else if (updates.suggested_destination && !thought.suggested_destination && thought.status !== "done") {
+        autoStatus = "routed";
+        statusMessage = "Destination set → Routed";
+      }
+    }
+
+    const finalUpdates = autoStatus
+      ? { ...updates, status: autoStatus }
+      : updates;
+
     const { error } = await supabase
       .from("fleeting_thoughts")
-      .update(updates)
+      .update(finalUpdates)
       .eq("id", id);
 
     if (!error) {
       setThoughts(thoughts.map(t =>
-        t.id === id ? { ...t, ...updates } : t
+        t.id === id ? { ...t, ...finalUpdates } : t
       ));
       setEditingThought(null);
+
+      if (autoStatus) {
+        if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
+        setToast({ message: statusMessage, type: "success" });
+      }
     }
   }
 
