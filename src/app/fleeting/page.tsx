@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, TouchEvent } from "react";
 import { createClient, Thought, Project, PRIORITIES, DESTINATIONS, Priority, Destination } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,9 +23,13 @@ import {
   FileText,
   Menu,
   Zap,
+  Mic,
+  MicOff,
+  Clipboard,
   ChevronLeft,
   ChevronRight,
-  Inbox,
+  Check,
+  RefreshCw,
 } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import {
@@ -54,6 +58,229 @@ const COLUMNS = [
 ] as const;
 
 type ColumnId = (typeof COLUMNS)[number]["id"];
+
+// Floating Action Button Component with labels
+function FloatingActions({
+  onCapture,
+  onVoice,
+  onPaste,
+  isListening,
+  isExpanded,
+  setIsExpanded,
+}: {
+  onCapture: () => void;
+  onVoice: () => void;
+  onPaste: () => void;
+  isListening: boolean;
+  isExpanded: boolean;
+  setIsExpanded: (v: boolean) => void;
+}) {
+  return (
+    <>
+      {/* Backdrop when expanded */}
+      {isExpanded && (
+        <div
+          className="fixed inset-0 z-20"
+          onClick={() => setIsExpanded(false)}
+        />
+      )}
+
+      <div className="fixed bottom-6 right-4 z-30 flex flex-col-reverse items-end gap-3 pb-safe-bottom">
+        {/* Expanded actions with labels - staggered animation */}
+        {isExpanded && (
+          <>
+            <div className="flex items-center gap-2 animate-fade-in" style={{ animationDelay: '0ms' }}>
+              <span className="bg-zinc-800 text-zinc-200 text-sm px-3 py-1.5 rounded-full shadow-lg">
+                Paste
+              </span>
+              <button
+                onClick={() => { onPaste(); setIsExpanded(false); }}
+                className="w-12 h-12 rounded-full bg-green-600 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all"
+              >
+                <Clipboard size={22} />
+              </button>
+            </div>
+            <div className="flex items-center gap-2 animate-fade-in" style={{ animationDelay: '50ms', animationFillMode: 'both' }}>
+              <span className="bg-zinc-800 text-zinc-200 text-sm px-3 py-1.5 rounded-full shadow-lg">
+                {isListening ? "Tap to stop" : "Voice"}
+              </span>
+              <button
+                onClick={() => { onVoice(); }}
+                className={`w-12 h-12 rounded-full ${isListening ? 'bg-red-500' : 'bg-purple-600'} text-white flex items-center justify-center shadow-lg active:scale-95 transition-all relative`}
+              >
+                {isListening && (
+                  <>
+                    <span className="absolute inset-0 rounded-full bg-red-500 animate-ping opacity-30" />
+                    <span className="absolute inset-1 rounded-full bg-red-400 animate-pulse opacity-50" />
+                  </>
+                )}
+                {isListening ? <MicOff size={22} className="relative z-10" /> : <Mic size={22} />}
+              </button>
+            </div>
+            <div className="flex items-center gap-2 animate-fade-in" style={{ animationDelay: '100ms', animationFillMode: 'both' }}>
+              <span className="bg-zinc-800 text-zinc-200 text-sm px-3 py-1.5 rounded-full shadow-lg">
+                Type
+              </span>
+              <button
+                onClick={() => { onCapture(); setIsExpanded(false); }}
+                className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg active:scale-95 transition-all"
+              >
+                <FileText size={22} />
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Main FAB */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={`w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xl active:scale-95 transition-all duration-200 ${isExpanded ? 'rotate-45 bg-zinc-600' : ''}`}
+        >
+          <Plus size={28} />
+        </button>
+      </div>
+    </>
+  );
+}
+
+// Toast notification component
+function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 2500);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 animate-fade-in ${
+      type === 'success' ? 'bg-green-600' : 'bg-red-600'
+    }`}>
+      {type === 'success' ? <Check size={18} /> : <X size={18} />}
+      <span className="text-sm font-medium">{message}</span>
+    </div>
+  );
+}
+
+// Swipe position dots
+function SwipeDots({ columns, activeColumn }: { columns: typeof COLUMNS; activeColumn: ColumnId }) {
+  return (
+    <div className="flex justify-center gap-2 py-2 sm:hidden">
+      {columns.map((column) => (
+        <div
+          key={column.id}
+          className={`w-2 h-2 rounded-full transition-all duration-200 ${
+            activeColumn === column.id
+              ? `${column.color} scale-125`
+              : 'bg-zinc-700'
+          }`}
+        />
+      ))}
+    </div>
+  );
+}
+
+// Quick Capture Modal with voice recording indicator
+function QuickCaptureModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  initialContent,
+  isRecording,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (content: string) => void;
+  initialContent?: string;
+  isRecording?: boolean;
+}) {
+  const [content, setContent] = useState(initialContent || "");
+  const [submitting, setSubmitting] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setContent(initialContent || "");
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [isOpen, initialContent]);
+
+  // Update content when initialContent changes (e.g., from voice transcription)
+  useEffect(() => {
+    if (initialContent) {
+      setContent(initialContent);
+    }
+  }, [initialContent]);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async () => {
+    if (!content.trim()) return;
+    setSubmitting(true);
+    await onSubmit(content);
+    setSubmitting(false);
+    setContent("");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-end z-50">
+      <div className="bg-zinc-900 rounded-t-2xl w-full animate-slide-up">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-semibold">Quick Capture</h2>
+            {isRecording && (
+              <div className="flex items-center gap-2 bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm">
+                <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                Recording...
+              </div>
+            )}
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full">
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Voice waveform visualization when recording */}
+        {isRecording && (
+          <div className="px-4 py-3 flex items-center justify-center gap-1">
+            {[...Array(12)].map((_, i) => (
+              <div
+                key={i}
+                className="w-1 bg-red-500 rounded-full animate-pulse"
+                style={{
+                  height: `${12 + Math.random() * 20}px`,
+                  animationDelay: `${i * 50}ms`,
+                  animationDuration: '300ms',
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="p-4">
+          <textarea
+            ref={inputRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder={isRecording ? "Speak now..." : "What's on your mind?"}
+            className={`w-full h-32 p-4 rounded-xl bg-zinc-800 border text-zinc-50 text-lg focus:outline-none resize-none transition-colors ${
+              isRecording ? 'border-red-500/50' : 'border-zinc-700 focus:border-blue-500'
+            }`}
+            autoFocus={!isRecording}
+          />
+        </div>
+        <div className="p-4 pt-0 pb-safe-bottom">
+          <button
+            onClick={handleSubmit}
+            disabled={!content.trim() || submitting}
+            className="w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:text-zinc-500 font-semibold text-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+          >
+            {submitting ? <Loader2 size={22} className="animate-spin" /> : "Capture"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // Edit Modal Component
 function EditModal({
@@ -390,18 +617,90 @@ function MobileSidebar({
   );
 }
 
-// Thought Card Component
+// Quick Actions Context Menu for mobile
+function QuickActionsMenu({
+  thought,
+  onClose,
+  onMove,
+  onDelete,
+}: {
+  thought: Thought;
+  onClose: () => void;
+  onMove: (status: ColumnId) => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 sm:hidden" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute bottom-0 left-0 right-0 bg-zinc-900 rounded-t-2xl animate-slide-up pb-safe-bottom">
+        <div className="p-4 border-b border-zinc-800">
+          <p className="text-sm text-zinc-400 line-clamp-2">{thought.content}</p>
+        </div>
+        <div className="p-2">
+          <p className="text-xs text-zinc-500 px-3 py-2">Move to:</p>
+          <div className="grid grid-cols-2 gap-2 px-2">
+            {COLUMNS.filter(c => c.id !== thought.status).map((column) => {
+              const Icon = column.icon;
+              return (
+                <button
+                  key={column.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (navigator.vibrate) navigator.vibrate(15);
+                    onMove(column.id);
+                    onClose();
+                  }}
+                  className={`flex items-center gap-2 p-3 rounded-xl bg-zinc-800 active:bg-zinc-700 transition-colors`}
+                >
+                  <Icon size={16} className={column.color.replace("bg-", "text-")} />
+                  <span className="text-sm">{column.title}</span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              if (navigator.vibrate) navigator.vibrate([20, 30, 20]);
+              onDelete();
+              onClose();
+            }}
+            className="w-full mt-2 p-3 mx-2 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center gap-2 active:bg-red-500/20"
+            style={{ width: 'calc(100% - 16px)' }}
+          >
+            <Trash2 size={16} />
+            <span>Delete</span>
+          </button>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full p-4 text-center text-zinc-400 border-t border-zinc-800"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Thought Card Component with long-press support
 function ThoughtCard({
   thought,
   projects,
   onDelete,
   onEdit,
+  onMove,
 }: {
   thought: Thought;
   projects: Project[];
   onDelete: (id: string) => void;
   onEdit: (thought: Thought) => void;
+  onMove?: (id: string, status: ColumnId) => void;
 }) {
+  const [showQuickActions, setShowQuickActions] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const isLongPress = useRef(false);
+
   const {
     attributes,
     listeners,
@@ -418,13 +717,46 @@ function ThoughtCard({
   const project = projects.find(p => p.id === thought.project_id);
   const priority = thought.priority ? PRIORITIES[thought.priority] : null;
 
+  const handleTouchStart = () => {
+    isLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      isLongPress.current = true;
+      if (navigator.vibrate) navigator.vibrate(30);
+      setShowQuickActions(true);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
+  const handleClick = () => {
+    if (!isLongPress.current) {
+      onEdit(thought);
+    }
+  };
+
   return (
-    <Card
-      ref={setNodeRef}
-      style={style}
-      className="bg-zinc-800 border-zinc-700 cursor-pointer hover:border-zinc-600 active:border-zinc-500 transition-colors"
-      onClick={() => onEdit(thought)}
-    >
+    <>
+      {showQuickActions && onMove && (
+        <QuickActionsMenu
+          thought={thought}
+          onClose={() => setShowQuickActions(false)}
+          onMove={(status) => onMove(thought.id, status)}
+          onDelete={() => onDelete(thought.id)}
+        />
+      )}
+      <Card
+        ref={setNodeRef}
+        style={style}
+        className="bg-zinc-800 border-zinc-700 cursor-pointer hover:border-zinc-600 active:border-zinc-500 transition-colors"
+        onClick={handleClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchEnd}
+      >
       <CardContent className="p-3">
         <div className="flex gap-2">
           <button
@@ -500,6 +832,7 @@ function ThoughtCard({
         </div>
       </CardContent>
     </Card>
+    </>
   );
 }
 
@@ -510,6 +843,7 @@ function DroppableColumn({
   projects,
   onDelete,
   onEdit,
+  onMove,
   isActive,
 }: {
   column: (typeof COLUMNS)[number];
@@ -517,6 +851,7 @@ function DroppableColumn({
   projects: Project[];
   onDelete: (id: string) => void;
   onEdit: (thought: Thought) => void;
+  onMove?: (id: string, status: ColumnId) => void;
   isActive?: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
@@ -527,7 +862,7 @@ function DroppableColumn({
       ref={setNodeRef}
       className={`bg-zinc-900 rounded-2xl p-4 transition-all min-w-[280px] sm:min-w-0 ${
         isOver ? "ring-2 ring-zinc-500" : ""
-      } ${isActive ? "ring-2 ring-blue-500" : ""}`}
+      } ${isActive ? "" : ""}`}
     >
       <div className="flex items-center gap-2 mb-4">
         <Icon size={16} className={column.color.replace("bg-", "text-")} />
@@ -544,6 +879,7 @@ function DroppableColumn({
             projects={projects}
             onDelete={onDelete}
             onEdit={onEdit}
+            onMove={onMove}
           />
         ))}
         {thoughts.length === 0 && (
@@ -576,6 +912,23 @@ export default function FleetingPage() {
   const [expandedInput, setExpandedInput] = useState(false);
   const [mobileColumn, setMobileColumn] = useState<ColumnId>("inbox");
 
+  // FAB and quick capture state
+  const [fabExpanded, setFabExpanded] = useState(false);
+  const [quickCaptureOpen, setQuickCaptureOpen] = useState(false);
+  const [quickCaptureContent, setQuickCaptureContent] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Pull to refresh
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const pullStartY = useRef(0);
+  const [pullDistance, setPullDistance] = useState(0);
+
+  // Swipe handling
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const supabase = createClient();
 
   const sensors = useSensors(
@@ -583,6 +936,119 @@ export default function FleetingPage() {
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
     useSensor(KeyboardSensor)
   );
+
+  // Swipe handlers
+  const handleTouchStart = (e: TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    pullStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    // Only allow pull-to-refresh when scrolled to top
+    if (window.scrollY === 0) {
+      const pullY = e.touches[0].clientY - pullStartY.current;
+      if (pullY > 0 && pullY < 150) {
+        setPullDistance(pullY);
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: TouchEvent) => {
+    touchEndX.current = e.changedTouches[0].clientX;
+    handleSwipe();
+
+    // Pull to refresh
+    if (pullDistance > 80 && !isRefreshing) {
+      handleRefresh();
+    }
+    setPullDistance(0);
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    if (navigator.vibrate) navigator.vibrate(20);
+    await fetchThoughts();
+    await fetchProjects();
+    setIsRefreshing(false);
+    setToast({ message: "Refreshed!", type: "success" });
+  };
+
+  const handleSwipe = () => {
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (Math.abs(diff) < minSwipeDistance) return;
+
+    const currentIndex = COLUMNS.findIndex(c => c.id === mobileColumn);
+
+    if (diff > 0 && currentIndex < COLUMNS.length - 1) {
+      // Swipe left - go to next column
+      setMobileColumn(COLUMNS[currentIndex + 1].id);
+      if (navigator.vibrate) navigator.vibrate(10);
+    } else if (diff < 0 && currentIndex > 0) {
+      // Swipe right - go to previous column
+      setMobileColumn(COLUMNS[currentIndex - 1].id);
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
+  };
+
+  // Voice capture
+  const handleVoiceCapture = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert('Voice capture is not supported in this browser');
+      return;
+    }
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+      return;
+    }
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setQuickCaptureOpen(true);
+      setQuickCaptureContent("");
+    };
+
+    recognition.onresult = (event: any) => {
+      let transcript = "";
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      setQuickCaptureContent(transcript);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
+  // Paste from clipboard
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setQuickCaptureContent(text);
+        setQuickCaptureOpen(true);
+      }
+    } catch (err) {
+      // Fallback for browsers that don't support clipboard API
+      setQuickCaptureOpen(true);
+    }
+  };
 
   useEffect(() => {
     checkUser();
@@ -645,13 +1111,14 @@ export default function FleetingPage() {
     setProjects([]);
   }
 
-  async function addThought() {
-    if (!newThought.trim() || !user) return;
+  async function addThought(content?: string) {
+    const thoughtContent = content || newThought;
+    if (!thoughtContent.trim() || !user) return;
     setAdding(true);
 
-    const urlMatch = newThought.match(/^(https?:\/\/[^\s]+)$/);
+    const urlMatch = thoughtContent.match(/^(https?:\/\/[^\s]+)$/);
     const isUrl = !!urlMatch;
-    const isMarkdown = /^#|^\s*[-*]\s|```|^\s*\d+\.\s/.test(newThought);
+    const isMarkdown = /^#|^\s*[-*]\s|```|^\s*\d+\.\s/.test(thoughtContent);
 
     let contentType: 'text' | 'link' | 'voice' | 'image' | 'pdf' = 'text';
     if (isUrl) contentType = 'link';
@@ -659,12 +1126,12 @@ export default function FleetingPage() {
     const { data, error } = await supabase
       .from("fleeting_thoughts")
       .insert({
-        content: newThought,
+        content: thoughtContent,
         user_id: user.id,
         content_type: contentType,
         source: "manual",
         status: "inbox",
-        url: isUrl ? newThought : null,
+        url: isUrl ? thoughtContent : null,
         tags: isMarkdown ? ['spec', 'markdown'] : null,
       })
       .select()
@@ -674,6 +1141,10 @@ export default function FleetingPage() {
       setThoughts([data, ...thoughts]);
       setNewThought("");
       setExpandedInput(false);
+      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+      setToast({ message: "Captured!", type: "success" });
+    } else if (error) {
+      setToast({ message: "Failed to capture", type: "error" });
     }
     setAdding(false);
   }
@@ -688,6 +1159,8 @@ export default function FleetingPage() {
       setThoughts(thoughts.map(t =>
         t.id === id ? { ...t, status: newStatus } : t
       ));
+      const column = COLUMNS.find(c => c.id === newStatus);
+      setToast({ message: `Moved to ${column?.title}`, type: "success" });
     }
   }
 
@@ -714,6 +1187,7 @@ export default function FleetingPage() {
     if (!error) {
       setThoughts(thoughts.filter(t => t.id !== id));
       setEditingThought(null);
+      setToast({ message: "Deleted", type: "success" });
     }
   }
 
@@ -793,6 +1267,8 @@ export default function FleetingPage() {
     ? thoughts.filter(t => t.project_id === filterProject)
     : thoughts;
 
+  const currentColumnIndex = COLUMNS.findIndex(c => c.id === mobileColumn);
+
   if (loading) {
     return (
       <div className="min-h-[100dvh] bg-zinc-950 text-zinc-50 flex items-center justify-center">
@@ -842,6 +1318,31 @@ export default function FleetingPage() {
 
   return (
     <div className="min-h-[100dvh] bg-zinc-950 text-zinc-50">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Pull to refresh indicator */}
+      {pullDistance > 0 && (
+        <div
+          className="fixed top-0 left-0 right-0 flex justify-center z-50 sm:hidden"
+          style={{ paddingTop: Math.min(pullDistance, 80) }}
+        >
+          <div className={`bg-zinc-800 rounded-full p-2 shadow-lg transition-transform ${pullDistance > 80 ? 'scale-110' : ''}`}>
+            <RefreshCw
+              size={20}
+              className={`text-blue-400 ${pullDistance > 80 ? 'animate-spin' : ''}`}
+              style={{ transform: `rotate(${pullDistance * 2}deg)` }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Modals */}
       {editingThought && (
         <EditModal
@@ -869,6 +1370,15 @@ export default function FleetingPage() {
           }
         />
       )}
+
+      {/* Quick Capture Modal */}
+      <QuickCaptureModal
+        isOpen={quickCaptureOpen}
+        onClose={() => { setQuickCaptureOpen(false); setQuickCaptureContent(""); setIsListening(false); }}
+        onSubmit={addThought}
+        initialContent={quickCaptureContent}
+        isRecording={isListening}
+      />
 
       {/* Mobile Sidebar */}
       <MobileSidebar
@@ -942,7 +1452,7 @@ export default function FleetingPage() {
       </div>
 
       {/* Main Content */}
-      <div className="lg:pl-64">
+      <div className="lg:pl-64 pb-24 sm:pb-0">
         {/* Header */}
         <div className="sticky top-0 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800 z-20">
           <div className="px-4 py-3 flex items-center justify-between">
@@ -963,13 +1473,6 @@ export default function FleetingPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <a
-                href="/capture"
-                className="p-2 hover:bg-zinc-800 rounded-lg sm:hidden"
-                title="Quick capture"
-              >
-                <Plus size={20} />
-              </a>
               <Button
                 variant="outline"
                 size="sm"
@@ -1009,7 +1512,7 @@ export default function FleetingPage() {
                 </button>
               </div>
               <Button
-                onClick={addThought}
+                onClick={() => addThought()}
                 disabled={adding || !newThought.trim()}
                 className="bg-white text-zinc-950 hover:bg-zinc-200"
               >
@@ -1018,31 +1521,46 @@ export default function FleetingPage() {
             </div>
           </div>
 
-          {/* Mobile Column Tabs */}
-          <div className="flex sm:hidden border-t border-zinc-800 overflow-x-auto scrollbar-hide">
-            {COLUMNS.map((column) => {
-              const count = filteredThoughts.filter(t => t.status === column.id).length;
-              const Icon = column.icon;
-              return (
-                <button
-                  key={column.id}
-                  onClick={() => setMobileColumn(column.id)}
-                  className={`flex-1 min-w-[80px] py-3 px-2 text-center text-sm font-medium transition-colors ${
-                    mobileColumn === column.id
-                      ? "border-b-2 border-blue-500 text-blue-400"
-                      : "text-zinc-400"
-                  }`}
-                >
-                  <div className="flex items-center justify-center gap-1">
-                    <Icon size={14} />
-                    <span>{column.title}</span>
-                    {count > 0 && (
-                      <span className="text-xs bg-zinc-800 px-1.5 rounded-full">{count}</span>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+          {/* Mobile Column Tabs with swipe indicators */}
+          <div className="sm:hidden border-t border-zinc-800">
+            <div className="flex items-center">
+              {/* Left arrow indicator */}
+              <div className={`p-2 ${currentColumnIndex > 0 ? 'text-zinc-400' : 'text-zinc-700'}`}>
+                <ChevronLeft size={16} />
+              </div>
+
+              {/* Tabs */}
+              <div className="flex-1 flex overflow-x-auto scrollbar-hide">
+                {COLUMNS.map((column) => {
+                  const count = filteredThoughts.filter(t => t.status === column.id).length;
+                  const Icon = column.icon;
+                  return (
+                    <button
+                      key={column.id}
+                      onClick={() => setMobileColumn(column.id)}
+                      className={`flex-1 min-w-[70px] py-3 px-2 text-center text-sm font-medium transition-colors ${
+                        mobileColumn === column.id
+                          ? "border-b-2 border-blue-500 text-blue-400"
+                          : "text-zinc-400"
+                      }`}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <Icon size={14} />
+                        <span className="hidden xs:inline">{column.title}</span>
+                        {count > 0 && (
+                          <span className="text-xs bg-zinc-800 px-1.5 rounded-full">{count}</span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Right arrow indicator */}
+              <div className={`p-2 ${currentColumnIndex < COLUMNS.length - 1 ? 'text-zinc-400' : 'text-zinc-700'}`}>
+                <ChevronRight size={16} />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1083,7 +1601,7 @@ export default function FleetingPage() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={addThought}
+                  onClick={() => addThought()}
                   disabled={adding || !newThought.trim()}
                   className="bg-white text-zinc-950 hover:bg-zinc-200"
                 >
@@ -1118,8 +1636,24 @@ export default function FleetingPage() {
             })}
           </div>
 
-          {/* Mobile View - Single Column */}
-          <div className="sm:hidden p-4">
+          {/* Mobile View - Single Column with Swipe */}
+          <div
+            ref={containerRef}
+            className="sm:hidden p-4 transition-transform duration-200"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Swipe position dots */}
+            <SwipeDots columns={COLUMNS} activeColumn={mobileColumn} />
+
+            {/* Refreshing indicator */}
+            {isRefreshing && (
+              <div className="flex justify-center py-4">
+                <Loader2 size={24} className="animate-spin text-blue-500" />
+              </div>
+            )}
+
             {COLUMNS.filter(c => c.id === mobileColumn).map((column) => {
               const columnThoughts = filteredThoughts.filter((t) => t.status === column.id);
               return (
@@ -1130,6 +1664,7 @@ export default function FleetingPage() {
                   projects={projects}
                   onDelete={deleteThought}
                   onEdit={setEditingThought}
+                  onMove={moveThought}
                   isActive
                 />
               );
@@ -1146,6 +1681,18 @@ export default function FleetingPage() {
             ) : null}
           </DragOverlay>
         </DndContext>
+      </div>
+
+      {/* Floating Action Button - Mobile Only */}
+      <div className="sm:hidden">
+        <FloatingActions
+          onCapture={() => setQuickCaptureOpen(true)}
+          onVoice={handleVoiceCapture}
+          onPaste={handlePaste}
+          isListening={isListening}
+          isExpanded={fabExpanded}
+          setIsExpanded={setFabExpanded}
+        />
       </div>
     </div>
   );
