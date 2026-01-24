@@ -4,8 +4,22 @@ import { useState, useEffect } from "react";
 import { createClient, Thought } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Loader2, LogOut, Trash2, ArrowRight } from "lucide-react";
+import { Plus, Loader2, LogOut, Trash2, GripVertical } from "lucide-react";
 import { User } from "@supabase/supabase-js";
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragStartEvent,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useDroppable } from "@dnd-kit/core";
 
 const ALLOWED_EMAILS = ["unshackledpursuit@gmail.com", "drussell2381@gmail.com"];
 
@@ -18,6 +32,104 @@ const COLUMNS = [
 
 type ColumnId = (typeof COLUMNS)[number]["id"];
 
+function ThoughtCard({
+  thought,
+  onDelete,
+  isDragging,
+}: {
+  thought: Thought;
+  onDelete: (id: string) => void;
+  isDragging?: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: thought.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className="bg-zinc-800 border-zinc-700 cursor-grab active:cursor-grabbing"
+    >
+      <CardContent className="p-3">
+        <div className="flex gap-2">
+          <button
+            {...attributes}
+            {...listeners}
+            className="text-zinc-500 hover:text-zinc-300 touch-none"
+          >
+            <GripVertical size={16} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-zinc-200 mb-3">{thought.content}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-zinc-500">
+                {new Date(thought.captured_at).toLocaleDateString()}
+              </span>
+              <button
+                onClick={() => onDelete(thought.id)}
+                className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-red-400"
+                title="Delete"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DroppableColumn({
+  column,
+  thoughts,
+  onDelete,
+}: {
+  column: (typeof COLUMNS)[number];
+  thoughts: Thought[];
+  onDelete: (id: string) => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: column.id });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`bg-zinc-900 rounded-lg p-4 transition-colors ${
+        isOver ? "ring-2 ring-zinc-500" : ""
+      }`}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <div className={`w-3 h-3 rounded-full ${column.color}`} />
+        <h2 className="font-semibold">{column.title}</h2>
+        <span className="ml-auto text-sm text-zinc-500">{thoughts.length}</span>
+      </div>
+      <div className="space-y-3 min-h-[100px]">
+        {thoughts.map((thought) => (
+          <ThoughtCard
+            key={thought.id}
+            thought={thought}
+            onDelete={onDelete}
+          />
+        ))}
+        {thoughts.length === 0 && (
+          <p className="text-sm text-zinc-600 text-center py-4">Drop here</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function FleetingPage() {
   const [user, setUser] = useState<User | null>(null);
   const [thoughts, setThoughts] = useState<Thought[]>([]);
@@ -25,8 +137,18 @@ export default function FleetingPage() {
   const [newThought, setNewThought] = useState("");
   const [adding, setAdding] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
+  const [activeThought, setActiveThought] = useState<Thought | null>(null);
 
   const supabase = createClient();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
 
   useEffect(() => {
     checkUser();
@@ -123,12 +245,38 @@ export default function FleetingPage() {
     }
   }
 
-  function getNextStatus(current: ColumnId): ColumnId | null {
-    const idx = COLUMNS.findIndex(c => c.id === current);
-    if (idx < COLUMNS.length - 1) {
-      return COLUMNS[idx + 1].id;
+  function handleDragStart(event: DragStartEvent) {
+    const thought = thoughts.find(t => t.id === event.active.id);
+    setActiveThought(thought || null);
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveThought(null);
+
+    if (!over) return;
+
+    const thoughtId = active.id as string;
+    const overId = over.id as string;
+
+    // Check if dropped on a column
+    const targetColumn = COLUMNS.find(c => c.id === overId);
+    if (targetColumn) {
+      const thought = thoughts.find(t => t.id === thoughtId);
+      if (thought && thought.status !== targetColumn.id) {
+        moveThought(thoughtId, targetColumn.id);
+      }
+      return;
     }
-    return null;
+
+    // Check if dropped on another thought (move to that thought's column)
+    const targetThought = thoughts.find(t => t.id === overId);
+    if (targetThought) {
+      const thought = thoughts.find(t => t.id === thoughtId);
+      if (thought && thought.status !== targetThought.status) {
+        moveThought(thoughtId, targetThought.status as ColumnId);
+      }
+    }
   }
 
   if (loading) {
@@ -231,55 +379,36 @@ export default function FleetingPage() {
       </div>
 
       {/* Kanban Board */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {COLUMNS.map((column) => {
-          const columnThoughts = thoughts.filter((t) => t.status === column.id);
-          return (
-            <div key={column.id} className="bg-zinc-900 rounded-lg p-4">
-              <div className="flex items-center gap-2 mb-4">
-                <div className={`w-3 h-3 rounded-full ${column.color}`} />
-                <h2 className="font-semibold">{column.title}</h2>
-                <span className="ml-auto text-sm text-zinc-500">{columnThoughts.length}</span>
-              </div>
-              <div className="space-y-3">
-                {columnThoughts.map((thought) => (
-                  <Card key={thought.id} className="bg-zinc-800 border-zinc-700">
-                    <CardContent className="p-3">
-                      <p className="text-sm text-zinc-200 mb-3">{thought.content}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-zinc-500">
-                          {new Date(thought.captured_at).toLocaleDateString()}
-                        </span>
-                        <div className="flex gap-1">
-                          {getNextStatus(thought.status as ColumnId) && (
-                            <button
-                              onClick={() => moveThought(thought.id, getNextStatus(thought.status as ColumnId)!)}
-                              className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-zinc-200"
-                              title="Move to next"
-                            >
-                              <ArrowRight size={14} />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => deleteThought(thought.id)}
-                            className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-red-400"
-                            title="Delete"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-                {columnThoughts.length === 0 && (
-                  <p className="text-sm text-zinc-600 text-center py-4">No items</p>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {COLUMNS.map((column) => {
+            const columnThoughts = thoughts.filter((t) => t.status === column.id);
+            return (
+              <DroppableColumn
+                key={column.id}
+                column={column}
+                thoughts={columnThoughts}
+                onDelete={deleteThought}
+              />
+            );
+          })}
+        </div>
+
+        <DragOverlay>
+          {activeThought ? (
+            <Card className="bg-zinc-800 border-zinc-500 shadow-xl rotate-3">
+              <CardContent className="p-3">
+                <p className="text-sm text-zinc-200">{activeThought.content}</p>
+              </CardContent>
+            </Card>
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }
