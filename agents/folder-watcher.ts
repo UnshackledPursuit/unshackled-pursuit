@@ -20,7 +20,7 @@ import * as path from 'path';
 
 // Configuration
 const INBOX_FOLDER = process.env.FLEETING_INBOX_FOLDER ||
-  path.join(process.env.HOME || '', 'Library/Mobile Documents/com~apple~CloudDocs/FleetingInbox');
+  path.join(process.env.HOME || '', 'Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/Construct/FleetingThoughts');
 const PROCESSED_FOLDER = path.join(INBOX_FOLDER, '_processed');
 const USER_EMAIL = 'unshackledpursuit@gmail.com'; // Your email for user lookup
 
