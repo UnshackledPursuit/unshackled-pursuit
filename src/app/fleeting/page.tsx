@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect } from "react";
 import { createClient, Thought, Project, PRIORITIES, DESTINATIONS, Priority, Destination } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,19 +11,21 @@ import {
   Trash2,
   GripVertical,
   X,
-  Tag,
   FolderOpen,
   Sparkles,
   ExternalLink,
-  ChevronDown,
   Circle,
   CheckCircle2,
   Clock,
-  Archive,
   Pencil,
   Link as LinkIcon,
   Maximize2,
   FileText,
+  Menu,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
+  Inbox,
 } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import {
@@ -32,6 +34,7 @@ import {
   closestCorners,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   DragStartEvent,
@@ -85,27 +88,25 @@ function EditModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+    <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-zinc-900 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto animate-slide-up sm:animate-fade-in">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800 sticky top-0 bg-zinc-900 z-10">
           <h2 className="text-lg font-semibold">Edit Thought</h2>
-          <button onClick={onClose} className="p-1 hover:bg-zinc-800 rounded">
+          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full active:bg-zinc-700">
             <X size={20} />
           </button>
         </div>
 
         <div className="p-4 space-y-4">
-          {/* Content */}
           <div>
             <label className="block text-sm text-zinc-400 mb-1">Content</label>
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full p-3 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 min-h-[100px]"
+              className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 min-h-[100px] text-base"
             />
           </div>
 
-          {/* URL */}
           <div>
             <label className="block text-sm text-zinc-400 mb-1">URL (optional)</label>
             <input
@@ -113,18 +114,17 @@ function EditModal({
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full p-3 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500"
+              className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-base"
             />
           </div>
 
-          {/* Priority & Project Row */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-zinc-400 mb-1">Priority</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as Priority | "")}
-                className="w-full p-3 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500"
+                className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-base"
               >
                 <option value="">None</option>
                 {Object.entries(PRIORITIES).map(([key, val]) => (
@@ -137,7 +137,7 @@ function EditModal({
               <select
                 value={projectId}
                 onChange={(e) => setProjectId(e.target.value)}
-                className="w-full p-3 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500"
+                className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-base"
               >
                 <option value="">None</option>
                 {projects.map((p) => (
@@ -147,7 +147,6 @@ function EditModal({
             </div>
           </div>
 
-          {/* Tags */}
           <div>
             <label className="block text-sm text-zinc-400 mb-1">Tags (comma separated)</label>
             <input
@@ -155,19 +154,18 @@ function EditModal({
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="idea, feature, bug..."
-              className="w-full p-3 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500"
+              className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-base"
             />
           </div>
 
-          {/* Destination */}
           <div>
             <label className="block text-sm text-zinc-400 mb-1">Route To</label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {Object.entries(DESTINATIONS).map(([key, val]) => (
                 <button
                   key={key}
                   onClick={() => setDestination(destination === key ? "" : key as Destination)}
-                  className={`p-2 rounded border text-sm flex items-center gap-2 ${
+                  className={`p-3 rounded-xl border text-sm flex items-center gap-2 active:scale-95 transition-transform ${
                     destination === key
                       ? "border-zinc-500 bg-zinc-800"
                       : "border-zinc-700 hover:border-zinc-600"
@@ -180,34 +178,29 @@ function EditModal({
             </div>
           </div>
 
-          {/* AI Analysis (read-only) */}
           {thought.ai_analysis && (
             <div>
               <label className="block text-sm text-zinc-400 mb-1 flex items-center gap-1">
                 <Sparkles size={14} />
                 AI Analysis
               </label>
-              <div className="p-3 rounded bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-300">
+              <div className="p-3 rounded-xl bg-zinc-800/50 border border-zinc-700 text-sm text-zinc-300">
                 {thought.ai_analysis}
               </div>
             </div>
           )}
 
-          {/* Metadata */}
-          <div className="text-xs text-zinc-500 flex gap-4">
+          <div className="text-xs text-zinc-500 flex flex-wrap gap-2">
             <span>Captured: {new Date(thought.captured_at).toLocaleString()}</span>
-            {thought.processed_at && (
-              <span>Processed: {new Date(thought.processed_at).toLocaleString()}</span>
-            )}
             <span>Source: {thought.source}</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-4 border-t border-zinc-800">
+        <div className="flex items-center justify-between p-4 border-t border-zinc-800 sticky bottom-0 bg-zinc-900">
           <Button
             variant="outline"
             onClick={onDelete}
-            className="border-red-800 text-red-400 hover:bg-red-950"
+            className="border-red-800 text-red-400 hover:bg-red-950 active:scale-95"
           >
             <Trash2 size={16} className="mr-2" />
             Delete
@@ -216,8 +209,8 @@ function EditModal({
             <Button variant="outline" onClick={onClose} className="border-zinc-700">
               Cancel
             </Button>
-            <Button onClick={handleSave} className="bg-white text-zinc-950 hover:bg-zinc-200">
-              Save Changes
+            <Button onClick={handleSave} className="bg-white text-zinc-950 hover:bg-zinc-200 active:scale-95">
+              Save
             </Button>
           </div>
         </div>
@@ -245,11 +238,11 @@ function ProjectModal({
   const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#64748b"];
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-zinc-900 rounded-lg w-full max-w-md">
+    <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-zinc-900 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md animate-slide-up sm:animate-fade-in">
         <div className="flex items-center justify-between p-4 border-b border-zinc-800">
           <h2 className="text-lg font-semibold">{project ? "Edit Project" : "New Project"}</h2>
-          <button onClick={onClose} className="p-1 hover:bg-zinc-800 rounded">
+          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full">
             <X size={20} />
           </button>
         </div>
@@ -261,7 +254,7 @@ function ProjectModal({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full p-3 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500"
+              className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-base"
               placeholder="Project name..."
             />
           </div>
@@ -271,19 +264,19 @@ function ProjectModal({
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-3 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500"
+              className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-base"
               placeholder="What's this project about?"
             />
           </div>
 
           <div>
             <label className="block text-sm text-zinc-400 mb-1">Color</label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {colors.map((c) => (
                 <button
                   key={c}
                   onClick={() => setColor(c)}
-                  className={`w-8 h-8 rounded-full ${color === c ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900" : ""}`}
+                  className={`w-10 h-10 rounded-full active:scale-90 transition-transform ${color === c ? "ring-2 ring-white ring-offset-2 ring-offset-zinc-900" : ""}`}
                   style={{ backgroundColor: c }}
                 />
               ))}
@@ -315,6 +308,82 @@ function ProjectModal({
               {project ? "Save" : "Create"}
             </Button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Mobile Sidebar
+function MobileSidebar({
+  isOpen,
+  onClose,
+  projects,
+  filterProject,
+  setFilterProject,
+  onNewProject,
+  onEditProject,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  projects: Project[];
+  filterProject: string | null;
+  setFilterProject: (id: string | null) => void;
+  onNewProject: () => void;
+  onEditProject: (project: Project) => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-40 lg:hidden">
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+      <div className="absolute left-0 top-0 bottom-0 w-72 bg-zinc-900 animate-slide-up">
+        <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+          <h2 className="font-semibold flex items-center gap-2">
+            <FolderOpen size={18} />
+            Projects
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full">
+            <X size={20} />
+          </button>
+        </div>
+        <div className="p-2 space-y-1">
+          <button
+            onClick={() => { setFilterProject(null); onClose(); }}
+            className={`w-full text-left px-4 py-3 rounded-xl text-sm ${
+              !filterProject ? "bg-zinc-800" : "hover:bg-zinc-800/50 active:bg-zinc-800"
+            }`}
+          >
+            All Thoughts
+          </button>
+          {projects.map((project) => (
+            <div
+              key={project.id}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm cursor-pointer ${
+                filterProject === project.id ? "bg-zinc-800" : "hover:bg-zinc-800/50 active:bg-zinc-800"
+              }`}
+              onClick={() => { setFilterProject(project.id); onClose(); }}
+            >
+              <div
+                className="w-3 h-3 rounded-full flex-shrink-0"
+                style={{ backgroundColor: project.color }}
+              />
+              <span className="flex-1 truncate">{project.name}</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); onEditProject(project); }}
+                className="p-2 hover:bg-zinc-700 rounded-full"
+              >
+                <Pencil size={14} />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={onNewProject}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-zinc-400 hover:bg-zinc-800/50"
+          >
+            <Plus size={16} />
+            New Project
+          </button>
         </div>
       </div>
     </div>
@@ -353,7 +422,7 @@ function ThoughtCard({
     <Card
       ref={setNodeRef}
       style={style}
-      className="bg-zinc-800 border-zinc-700 cursor-pointer hover:border-zinc-600 transition-colors"
+      className="bg-zinc-800 border-zinc-700 cursor-pointer hover:border-zinc-600 active:border-zinc-500 transition-colors"
       onClick={() => onEdit(thought)}
     >
       <CardContent className="p-3">
@@ -361,13 +430,12 @@ function ThoughtCard({
           <button
             {...attributes}
             {...listeners}
-            className="text-zinc-500 hover:text-zinc-300 touch-none cursor-grab"
+            className="text-zinc-500 hover:text-zinc-300 touch-none cursor-grab hidden sm:block"
             onClick={(e) => e.stopPropagation()}
           >
             <GripVertical size={16} />
           </button>
           <div className="flex-1 min-w-0">
-            {/* Priority & Project badges */}
             <div className="flex gap-1 mb-2 flex-wrap">
               {priority && (
                 <span className={`text-xs px-1.5 py-0.5 rounded ${priority.textColor} bg-zinc-700/50`}>
@@ -389,10 +457,8 @@ function ThoughtCard({
               )}
             </div>
 
-            {/* Content */}
             <p className="text-sm text-zinc-200 mb-2 line-clamp-3">{thought.content}</p>
 
-            {/* URL indicator */}
             {thought.url && (
               <div className="flex items-center gap-1 text-xs text-blue-400 mb-2">
                 <LinkIcon size={12} />
@@ -400,7 +466,6 @@ function ThoughtCard({
               </div>
             )}
 
-            {/* Tags */}
             {thought.tags && thought.tags.length > 0 && (
               <div className="flex gap-1 flex-wrap mb-2">
                 {thought.tags.slice(0, 3).map((tag) => (
@@ -414,7 +479,6 @@ function ThoughtCard({
               </div>
             )}
 
-            {/* Footer */}
             <div className="flex items-center justify-between">
               <span className="text-xs text-zinc-500">
                 {new Date(thought.captured_at).toLocaleDateString()}
@@ -430,16 +494,6 @@ function ThoughtCard({
                     <Sparkles size={12} className="text-purple-400" />
                   </span>
                 )}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(thought.id);
-                  }}
-                  className="p-1 hover:bg-zinc-700 rounded text-zinc-400 hover:text-red-400"
-                  title="Delete"
-                >
-                  <Trash2 size={14} />
-                </button>
               </div>
             </div>
           </div>
@@ -456,12 +510,14 @@ function DroppableColumn({
   projects,
   onDelete,
   onEdit,
+  isActive,
 }: {
   column: (typeof COLUMNS)[number];
   thoughts: Thought[];
   projects: Project[];
   onDelete: (id: string) => void;
   onEdit: (thought: Thought) => void;
+  isActive?: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
   const Icon = column.icon;
@@ -469,9 +525,9 @@ function DroppableColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`bg-zinc-900 rounded-lg p-4 transition-colors ${
+      className={`bg-zinc-900 rounded-2xl p-4 transition-all min-w-[280px] sm:min-w-0 ${
         isOver ? "ring-2 ring-zinc-500" : ""
-      }`}
+      } ${isActive ? "ring-2 ring-blue-500" : ""}`}
     >
       <div className="flex items-center gap-2 mb-4">
         <Icon size={16} className={column.color.replace("bg-", "text-")} />
@@ -491,7 +547,9 @@ function DroppableColumn({
           />
         ))}
         {thoughts.length === 0 && (
-          <p className="text-sm text-zinc-600 text-center py-8">Drop here</p>
+          <p className="text-sm text-zinc-600 text-center py-8">
+            {column.id === "inbox" ? "All caught up!" : "Drop here"}
+          </p>
         )}
       </div>
     </div>
@@ -514,13 +572,15 @@ export default function FleetingPage() {
     project: null,
   });
   const [filterProject, setFilterProject] = useState<string | null>(null);
-  const [showProjects, setShowProjects] = useState(true);
+  const [showProjects, setShowProjects] = useState(false);
   const [expandedInput, setExpandedInput] = useState(false);
+  const [mobileColumn, setMobileColumn] = useState<ColumnId>("inbox");
 
   const supabase = createClient();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
     useSensor(KeyboardSensor)
   );
 
@@ -589,14 +649,10 @@ export default function FleetingPage() {
     if (!newThought.trim() || !user) return;
     setAdding(true);
 
-    // Check if it's a URL
     const urlMatch = newThought.match(/^(https?:\/\/[^\s]+)$/);
     const isUrl = !!urlMatch;
-
-    // Check if it looks like markdown (has headers, bullets, code blocks, etc.)
     const isMarkdown = /^#|^\s*[-*]\s|```|^\s*\d+\.\s/.test(newThought);
 
-    // Determine content type
     let contentType: 'text' | 'link' | 'voice' | 'image' | 'pdf' = 'text';
     if (isUrl) contentType = 'link';
 
@@ -666,10 +722,7 @@ export default function FleetingPage() {
 
     const { data: newProject, error } = await supabase
       .from("projects")
-      .insert({
-        ...data,
-        user_id: user.id,
-      })
+      .insert({ ...data, user_id: user.id })
       .select()
       .single();
 
@@ -736,14 +789,13 @@ export default function FleetingPage() {
     }
   }
 
-  // Filter thoughts
   const filteredThoughts = filterProject
     ? thoughts.filter(t => t.project_id === filterProject)
     : thoughts;
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-50 flex items-center justify-center">
+      <div className="min-h-[100dvh] bg-zinc-950 text-zinc-50 flex items-center justify-center">
         <Loader2 className="animate-spin" size={32} />
       </div>
     );
@@ -751,10 +803,13 @@ export default function FleetingPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-zinc-950 text-zinc-50 flex items-center justify-center p-6">
+      <div className="min-h-[100dvh] bg-zinc-950 text-zinc-50 flex items-center justify-center p-6">
         <Card className="w-full max-w-md bg-zinc-900 border-zinc-800">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Fleeting Thoughts</CardTitle>
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mx-auto mb-4">
+              <Zap size={32} className="text-white" />
+            </div>
+            <CardTitle className="text-2xl">Fleeting Thoughts</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-center text-zinc-400 mb-6">
@@ -762,7 +817,7 @@ export default function FleetingPage() {
             </p>
             <Button
               onClick={handleGoogleSignIn}
-              className="w-full bg-white text-zinc-950 hover:bg-zinc-200 flex items-center justify-center gap-3"
+              className="w-full bg-white text-zinc-950 hover:bg-zinc-200 flex items-center justify-center gap-3 py-6 text-lg"
               disabled={authLoading}
             >
               {authLoading ? (
@@ -786,8 +841,8 @@ export default function FleetingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-50">
-      {/* Edit Modal */}
+    <div className="min-h-[100dvh] bg-zinc-950 text-zinc-50">
+      {/* Modals */}
       {editingThought && (
         <EditModal
           thought={editingThought}
@@ -798,7 +853,6 @@ export default function FleetingPage() {
         />
       )}
 
-      {/* Project Modal */}
       {projectModal.open && (
         <ProjectModal
           project={projectModal.project}
@@ -816,105 +870,135 @@ export default function FleetingPage() {
         />
       )}
 
-      <div className="flex">
-        {/* Projects Sidebar */}
-        <div className={`${showProjects ? "w-64" : "w-0"} transition-all overflow-hidden border-r border-zinc-800 h-screen sticky top-0`}>
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold flex items-center gap-2">
-                <FolderOpen size={18} />
-                Projects
-              </h2>
-              <button
-                onClick={() => setProjectModal({ open: true, project: null })}
-                className="p-1 hover:bg-zinc-800 rounded"
-              >
-                <Plus size={18} />
-              </button>
-            </div>
+      {/* Mobile Sidebar */}
+      <MobileSidebar
+        isOpen={showProjects}
+        onClose={() => setShowProjects(false)}
+        projects={projects}
+        filterProject={filterProject}
+        setFilterProject={setFilterProject}
+        onNewProject={() => { setShowProjects(false); setProjectModal({ open: true, project: null }); }}
+        onEditProject={(project) => { setShowProjects(false); setProjectModal({ open: true, project }); }}
+      />
 
-            <div className="space-y-1">
-              <button
-                onClick={() => setFilterProject(null)}
-                className={`w-full text-left px-3 py-2 rounded text-sm ${
-                  !filterProject ? "bg-zinc-800" : "hover:bg-zinc-800/50"
-                }`}
-              >
-                All Thoughts
-              </button>
-              {projects.map((project) => (
-                <div
-                  key={project.id}
-                  className={`flex items-center gap-2 px-3 py-2 rounded text-sm cursor-pointer group ${
-                    filterProject === project.id ? "bg-zinc-800" : "hover:bg-zinc-800/50"
-                  }`}
-                  onClick={() => setFilterProject(project.id)}
-                >
-                  <div
-                    className="w-3 h-3 rounded-full flex-shrink-0"
-                    style={{ backgroundColor: project.color }}
-                  />
-                  <span className="flex-1 truncate">{project.name}</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setProjectModal({ open: true, project });
-                    }}
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-zinc-700 rounded"
-                  >
-                    <Pencil size={12} />
-                  </button>
-                </div>
-              ))}
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 border-r border-zinc-800 bg-zinc-950 z-30">
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <Zap size={16} className="text-white" />
             </div>
+            <span className="font-semibold">Fleeting</span>
+          </div>
+
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-semibold flex items-center gap-2 text-sm text-zinc-400">
+              <FolderOpen size={16} />
+              Projects
+            </h2>
+            <button
+              onClick={() => setProjectModal({ open: true, project: null })}
+              className="p-1 hover:bg-zinc-800 rounded"
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+
+          <div className="space-y-1">
+            <button
+              onClick={() => setFilterProject(null)}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
+                !filterProject ? "bg-zinc-800" : "hover:bg-zinc-800/50"
+              }`}
+            >
+              All Thoughts
+            </button>
+            {projects.map((project) => (
+              <div
+                key={project.id}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer group ${
+                  filterProject === project.id ? "bg-zinc-800" : "hover:bg-zinc-800/50"
+                }`}
+                onClick={() => setFilterProject(project.id)}
+              >
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: project.color }}
+                />
+                <span className="flex-1 truncate">{project.name}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setProjectModal({ open: true, project });
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-zinc-700 rounded"
+                >
+                  <Pencil size={12} />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Main Content */}
-        <div className="flex-1 p-6">
-          {/* Header */}
-          <div className="max-w-7xl mx-auto mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => setShowProjects(!showProjects)}
-                  className="p-2 hover:bg-zinc-800 rounded lg:hidden"
-                >
-                  <FolderOpen size={20} />
-                </button>
-                <div>
-                  <h1 className="text-3xl font-bold">Fleeting Thoughts</h1>
-                  <p className="text-zinc-400 mt-1">
-                    {filterProject
-                      ? `Filtered by: ${projects.find(p => p.id === filterProject)?.name}`
-                      : "Capture. Process. Route. Execute."}
+      {/* Main Content */}
+      <div className="lg:pl-64">
+        {/* Header */}
+        <div className="sticky top-0 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800 z-20">
+          <div className="px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowProjects(true)}
+                className="p-2 hover:bg-zinc-800 rounded-lg lg:hidden"
+              >
+                <Menu size={20} />
+              </button>
+              <div>
+                <h1 className="text-xl font-bold">Fleeting Thoughts</h1>
+                {filterProject && (
+                  <p className="text-xs text-zinc-400">
+                    {projects.find(p => p.id === filterProject)?.name}
                   </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-zinc-400 hidden sm:block">{user.email}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleSignOut}
-                  className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
-                >
-                  <LogOut size={16} className="mr-2" />
-                  Sign Out
-                </Button>
+                )}
               </div>
             </div>
+            <div className="flex items-center gap-2">
+              <a
+                href="/capture"
+                className="p-2 hover:bg-zinc-800 rounded-lg sm:hidden"
+                title="Quick capture"
+              >
+                <Plus size={20} />
+              </a>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hidden sm:flex"
+              >
+                <LogOut size={16} className="mr-2" />
+                Sign Out
+              </Button>
+              <button
+                onClick={handleSignOut}
+                className="p-2 hover:bg-zinc-800 rounded-lg sm:hidden"
+              >
+                <LogOut size={18} />
+              </button>
+            </div>
+          </div>
 
-            {/* Quick Add */}
-            <div className="mt-6 flex gap-3">
+          {/* Quick Add - Desktop */}
+          <div className="hidden sm:block px-4 pb-3">
+            <div className="flex gap-3">
               <div className="flex-1 relative">
                 <input
                   type="text"
-                  placeholder="Quick capture a thought, paste a URL or markdown..."
+                  placeholder="Quick capture a thought..."
                   value={newThought}
                   onChange={(e) => setNewThought(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && addThought()}
-                  className="w-full p-3 pr-10 rounded bg-zinc-900 border border-zinc-800 text-zinc-50 focus:outline-none focus:border-zinc-600"
+                  className="w-full p-3 pr-10 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-50 focus:outline-none focus:border-zinc-600"
                 />
                 <button
                   onClick={() => setExpandedInput(true)}
@@ -932,90 +1016,136 @@ export default function FleetingPage() {
                 {adding ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
               </Button>
             </div>
-
-            {/* Expanded Markdown Input Modal */}
-            {expandedInput && (
-              <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-                <div className="bg-zinc-900 rounded-lg w-full max-w-3xl">
-                  <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-                    <h2 className="text-lg font-semibold flex items-center gap-2">
-                      <FileText size={20} />
-                      Paste Markdown / Spec
-                    </h2>
-                    <button onClick={() => setExpandedInput(false)} className="p-1 hover:bg-zinc-800 rounded">
-                      <X size={20} />
-                    </button>
-                  </div>
-                  <div className="p-4">
-                    <textarea
-                      value={newThought}
-                      onChange={(e) => setNewThought(e.target.value)}
-                      placeholder="Paste your markdown spec, notes, or any longer content here..."
-                      className="w-full h-80 p-4 rounded bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 font-mono text-sm"
-                      autoFocus
-                    />
-                    <p className="mt-2 text-xs text-zinc-500">
-                      Supports markdown formatting. Content with headers, bullets, or code blocks will be auto-tagged as specs.
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-2 p-4 border-t border-zinc-800">
-                    <Button variant="outline" onClick={() => setExpandedInput(false)} className="border-zinc-700">
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={addThought}
-                      disabled={adding || !newThought.trim()}
-                      className="bg-white text-zinc-950 hover:bg-zinc-200"
-                    >
-                      {adding ? <Loader2 className="animate-spin" size={20} /> : "Add to Inbox"}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Stats */}
-            <div className="mt-4 flex gap-4 text-sm text-zinc-500">
-              <span>{filteredThoughts.filter(t => t.status === "inbox").length} in inbox</span>
-              <span>{filteredThoughts.filter(t => t.ai_analysis).length} processed by AI</span>
-              <span>{filteredThoughts.filter(t => t.status === "done").length} completed</span>
-            </div>
           </div>
 
-          {/* Kanban Board */}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCorners}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-          >
-            <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {COLUMNS.map((column) => {
-                const columnThoughts = filteredThoughts.filter((t) => t.status === column.id);
-                return (
-                  <DroppableColumn
-                    key={column.id}
-                    column={column}
-                    thoughts={columnThoughts}
-                    projects={projects}
-                    onDelete={deleteThought}
-                    onEdit={setEditingThought}
-                  />
-                );
-              })}
-            </div>
-
-            <DragOverlay>
-              {activeThought ? (
-                <Card className="bg-zinc-800 border-zinc-500 shadow-xl rotate-3 w-64">
-                  <CardContent className="p-3">
-                    <p className="text-sm text-zinc-200 line-clamp-2">{activeThought.content}</p>
-                  </CardContent>
-                </Card>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
+          {/* Mobile Column Tabs */}
+          <div className="flex sm:hidden border-t border-zinc-800 overflow-x-auto scrollbar-hide">
+            {COLUMNS.map((column) => {
+              const count = filteredThoughts.filter(t => t.status === column.id).length;
+              const Icon = column.icon;
+              return (
+                <button
+                  key={column.id}
+                  onClick={() => setMobileColumn(column.id)}
+                  className={`flex-1 min-w-[80px] py-3 px-2 text-center text-sm font-medium transition-colors ${
+                    mobileColumn === column.id
+                      ? "border-b-2 border-blue-500 text-blue-400"
+                      : "text-zinc-400"
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    <Icon size={14} />
+                    <span>{column.title}</span>
+                    {count > 0 && (
+                      <span className="text-xs bg-zinc-800 px-1.5 rounded-full">{count}</span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
+
+        {/* Stats - Desktop */}
+        <div className="hidden sm:flex px-4 py-2 gap-4 text-sm text-zinc-500 border-b border-zinc-800">
+          <span>{filteredThoughts.filter(t => t.status === "inbox").length} in inbox</span>
+          <span>{filteredThoughts.filter(t => t.ai_analysis).length} processed by AI</span>
+          <span>{filteredThoughts.filter(t => t.status === "done").length} completed</span>
+        </div>
+
+        {/* Expanded Input Modal */}
+        {expandedInput && (
+          <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50">
+            <div className="bg-zinc-900 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-3xl animate-slide-up sm:animate-fade-in">
+              <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <FileText size={20} />
+                  Paste Markdown / Spec
+                </h2>
+                <button onClick={() => setExpandedInput(false)} className="p-2 hover:bg-zinc-800 rounded-full">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-4">
+                <textarea
+                  value={newThought}
+                  onChange={(e) => setNewThought(e.target.value)}
+                  placeholder="Paste your markdown spec, notes, or any longer content here..."
+                  className="w-full h-64 sm:h-80 p-4 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 font-mono text-sm"
+                  autoFocus
+                />
+                <p className="mt-2 text-xs text-zinc-500">
+                  Supports markdown formatting. Content with headers, bullets, or code blocks will be auto-tagged.
+                </p>
+              </div>
+              <div className="flex justify-end gap-2 p-4 border-t border-zinc-800">
+                <Button variant="outline" onClick={() => setExpandedInput(false)} className="border-zinc-700">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={addThought}
+                  disabled={adding || !newThought.trim()}
+                  className="bg-white text-zinc-950 hover:bg-zinc-200"
+                >
+                  {adding ? <Loader2 className="animate-spin" size={20} /> : "Add to Inbox"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Kanban Board */}
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          {/* Desktop View */}
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
+            {COLUMNS.map((column) => {
+              const columnThoughts = filteredThoughts.filter((t) => t.status === column.id);
+              return (
+                <DroppableColumn
+                  key={column.id}
+                  column={column}
+                  thoughts={columnThoughts}
+                  projects={projects}
+                  onDelete={deleteThought}
+                  onEdit={setEditingThought}
+                />
+              );
+            })}
+          </div>
+
+          {/* Mobile View - Single Column */}
+          <div className="sm:hidden p-4">
+            {COLUMNS.filter(c => c.id === mobileColumn).map((column) => {
+              const columnThoughts = filteredThoughts.filter((t) => t.status === column.id);
+              return (
+                <DroppableColumn
+                  key={column.id}
+                  column={column}
+                  thoughts={columnThoughts}
+                  projects={projects}
+                  onDelete={deleteThought}
+                  onEdit={setEditingThought}
+                  isActive
+                />
+              );
+            })}
+          </div>
+
+          <DragOverlay>
+            {activeThought ? (
+              <Card className="bg-zinc-800 border-zinc-500 shadow-xl rotate-3 w-64">
+                <CardContent className="p-3">
+                  <p className="text-sm text-zinc-200 line-clamp-2">{activeThought.content}</p>
+                </CardContent>
+              </Card>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
     </div>
   );
