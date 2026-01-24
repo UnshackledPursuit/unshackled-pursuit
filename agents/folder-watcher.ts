@@ -1,5 +1,11 @@
 #!/usr/bin/env npx ts-node
 
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load .env.local from project root
+dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
+
 /**
  * Fleeting Thoughts Folder Watcher
  *
@@ -16,7 +22,6 @@
 
 import { createClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
-import * as path from 'path';
 
 // Configuration
 const INBOX_FOLDER = process.env.FLEETING_INBOX_FOLDER ||
@@ -57,13 +62,29 @@ function isSpec(content: string): boolean {
   return specIndicators.some(pattern => pattern.test(content));
 }
 
+// Known projects organized by type
+const KNOWN_PROJECTS = {
+  // Websites
+  'unshackled-pursuit': ['unshackled', 'unshackledpursuit', 'pursuit'],
+  'fleeting-thoughts': ['fleeting', 'fleetingthoughts'],
+
+  // Apps
+  'waypointuub': ['waypoint', 'waypointuub'],
+  'ps5-remote': ['ps5', 'ps5remote', 'playstation'],
+  'framepilot': ['framepilot', 'frame'],
+  'aeon': ['aeon'],
+  'particles': ['particles'],
+};
+
 // Extract project name from content or filename
 function extractProjectHint(content: string, filename: string): string | null {
-  // Look for project mentions in the content
+  const lowerContent = content.toLowerCase();
+  const lowerFilename = filename.toLowerCase();
+
+  // Look for explicit project mentions in the content
   const projectPatterns = [
     /project:\s*(.+)/i,
     /for\s+([\w-]+)\s+project/i,
-    /^#.*\b(waypointHub|unshackledpursuit|fleeting)/i,
   ];
 
   for (const pattern of projectPatterns) {
@@ -71,12 +92,12 @@ function extractProjectHint(content: string, filename: string): string | null {
     if (match) return match[1].trim();
   }
 
-  // Check filename for project hints
-  const knownProjects = ['waypointHub', 'unshackledpursuit', 'fleeting'];
-  const lowerFilename = filename.toLowerCase();
-  for (const project of knownProjects) {
-    if (lowerFilename.includes(project.toLowerCase())) {
-      return project;
+  // Check against known projects
+  for (const [projectName, aliases] of Object.entries(KNOWN_PROJECTS)) {
+    for (const alias of aliases) {
+      if (lowerContent.includes(alias) || lowerFilename.includes(alias)) {
+        return projectName;
+      }
     }
   }
 
