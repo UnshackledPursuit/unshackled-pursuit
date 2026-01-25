@@ -1123,28 +1123,34 @@ export default function FleetingPage() {
     let contentType: 'text' | 'link' | 'voice' | 'image' | 'pdf' = 'text';
     if (isUrl) contentType = 'link';
 
-    const { data, error } = await supabase
-      .from("fleeting_thoughts")
-      .insert({
-        content: thoughtContent,
-        user_id: user.id,
-        content_type: contentType,
-        source: "manual",
-        status: "inbox",
-        url: isUrl ? thoughtContent : null,
-        tags: isMarkdown ? ['spec', 'markdown'] : null,
-      })
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("fleeting_thoughts")
+        .insert({
+          content: thoughtContent,
+          user_id: user.id,
+          content_type: contentType,
+          source: "manual",
+          status: "inbox",
+          url: isUrl ? thoughtContent : null,
+          tags: isMarkdown ? ['spec', 'markdown'] : null,
+        })
+        .select()
+        .single();
 
-    if (data && !error) {
-      setThoughts([data, ...thoughts]);
-      setNewThought("");
-      setExpandedInput(false);
-      if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
-      setToast({ message: "Captured!", type: "success" });
-    } else if (error) {
-      setToast({ message: "Failed to capture", type: "error" });
+      if (data && !error) {
+        setThoughts(prev => [data, ...prev]);
+        setNewThought("");
+        setExpandedInput(false);
+        if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
+        setToast({ message: "Captured!", type: "success" });
+      } else if (error) {
+        console.error("Supabase error:", error);
+        setToast({ message: `Failed: ${error.message}`, type: "error" });
+      }
+    } catch (err) {
+      console.error("Add thought error:", err);
+      setToast({ message: "Network error", type: "error" });
     }
     setAdding(false);
   }
