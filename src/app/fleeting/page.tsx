@@ -28,8 +28,14 @@ import {
   Clipboard,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Check,
   RefreshCw,
+  Settings,
+  FolderCode,
+  Globe,
+  MessageSquare,
 } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import {
@@ -455,19 +461,24 @@ function ProjectModal({
 }: {
   project: Project | null;
   onClose: () => void;
-  onSave: (data: { name: string; description: string; color: string }) => void;
+  onSave: (data: { name: string; description: string; color: string; app_path?: string; website_path?: string; feedback_url?: string; custom_instructions?: string }) => void;
   onDelete?: () => void;
 }) {
   const [name, setName] = useState(project?.name || "");
   const [description, setDescription] = useState(project?.description || "");
   const [color, setColor] = useState(project?.color || "#3b82f6");
+  const [appPath, setAppPath] = useState(project?.app_path || "");
+  const [websitePath, setWebsitePath] = useState(project?.website_path || "");
+  const [feedbackUrl, setFeedbackUrl] = useState(project?.feedback_url || "");
+  const [customInstructions, setCustomInstructions] = useState(project?.custom_instructions || "");
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const colors = ["#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#64748b"];
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50">
-      <div className="bg-zinc-900 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md animate-slide-up sm:animate-fade-in">
-        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+      <div className="bg-zinc-900 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto animate-slide-up sm:animate-fade-in">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800 sticky top-0 bg-zinc-900 z-10">
           <h2 className="text-lg font-semibold">{project ? "Edit Project" : "New Project"}</h2>
           <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full">
             <X size={20} />
@@ -509,9 +520,66 @@ function ProjectModal({
               ))}
             </div>
           </div>
+
+          {/* Advanced Settings Toggle */}
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="w-full text-left text-sm text-zinc-400 hover:text-zinc-300 flex items-center gap-2"
+          >
+            <span className={`transition-transform ${showAdvanced ? 'rotate-90' : ''}`}>▶</span>
+            Advanced Settings
+          </button>
+
+          {showAdvanced && (
+            <div className="space-y-4 pl-2 border-l-2 border-zinc-800">
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">App Path</label>
+                <input
+                  type="text"
+                  value={appPath}
+                  onChange={(e) => setAppPath(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-sm font-mono"
+                  placeholder="/path/to/app/code..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Website Path</label>
+                <input
+                  type="text"
+                  value={websitePath}
+                  onChange={(e) => setWebsitePath(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-sm font-mono"
+                  placeholder="/path/to/website/code..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Feedback URL</label>
+                <input
+                  type="url"
+                  value={feedbackUrl}
+                  onChange={(e) => setFeedbackUrl(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-sm"
+                  placeholder="https://..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm text-zinc-400 mb-1">Custom Instructions</label>
+                <textarea
+                  value={customInstructions}
+                  onChange={(e) => setCustomInstructions(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-sm min-h-[100px]"
+                  placeholder="Special instructions for Claude when working on this project..."
+                />
+              </div>
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-between p-4 border-t border-zinc-800">
+        <div className="flex items-center justify-between p-4 border-t border-zinc-800 sticky bottom-0 bg-zinc-900">
           {project && onDelete ? (
             <Button
               variant="outline"
@@ -528,7 +596,15 @@ function ProjectModal({
               Cancel
             </Button>
             <Button
-              onClick={() => onSave({ name, description, color })}
+              onClick={() => onSave({
+                name,
+                description,
+                color,
+                app_path: appPath || undefined,
+                website_path: websitePath || undefined,
+                feedback_url: feedbackUrl || undefined,
+                custom_instructions: customInstructions || undefined,
+              })}
               disabled={!name.trim()}
               className="bg-white text-zinc-950 hover:bg-zinc-200"
             >
@@ -1087,11 +1163,29 @@ export default function FleetingPage() {
     const { data, error } = await supabase
       .from("projects")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("sort_order", { ascending: true });
 
     if (data && !error) {
       setProjects(data);
     }
+  }
+
+  async function reorderProjects(projectId: string, newIndex: number) {
+    const oldIndex = projects.findIndex(p => p.id === projectId);
+    if (oldIndex === -1 || oldIndex === newIndex) return;
+
+    const reordered = [...projects];
+    const [moved] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    // Update local state immediately
+    setProjects(reordered);
+
+    // Update sort_order in database
+    const updates = reordered.map((p, i) =>
+      supabase.from("projects").update({ sort_order: i }).eq("id", p.id)
+    );
+    await Promise.all(updates);
   }
 
   async function handleGoogleSignIn() {
@@ -1134,6 +1228,7 @@ export default function FleetingPage() {
           status: "inbox",
           url: isUrl ? thoughtContent : null,
           tags: isMarkdown ? ['spec', 'markdown'] : null,
+          project_id: filterProject || null,
         })
         .select()
         .single();
@@ -1230,12 +1325,12 @@ export default function FleetingPage() {
     }
   }
 
-  async function createProject(data: { name: string; description: string; color: string }) {
+  async function createProject(data: { name: string; description: string; color: string; app_path?: string; website_path?: string; feedback_url?: string; custom_instructions?: string }) {
     if (!user) return;
 
     const { data: newProject, error } = await supabase
       .from("projects")
-      .insert({ ...data, user_id: user.id })
+      .insert({ ...data, user_id: user.id, sort_order: projects.length })
       .select()
       .single();
 
@@ -1245,7 +1340,7 @@ export default function FleetingPage() {
     }
   }
 
-  async function updateProject(id: string, data: { name: string; description: string; color: string }) {
+  async function updateProject(id: string, data: { name: string; description: string; color: string; app_path?: string; website_path?: string; feedback_url?: string; custom_instructions?: string }) {
     const { error } = await supabase
       .from("projects")
       .update(data)
@@ -1462,7 +1557,7 @@ export default function FleetingPage() {
             >
               All Thoughts
             </button>
-            {projects.map((project) => (
+            {projects.map((project, index) => (
               <div
                 key={project.id}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm cursor-pointer group ${
@@ -1470,6 +1565,28 @@ export default function FleetingPage() {
                 }`}
                 onClick={() => setFilterProject(project.id)}
               >
+                <div className="opacity-0 group-hover:opacity-100 flex flex-col -my-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (index > 0) reorderProjects(project.id, index - 1);
+                    }}
+                    className={`p-0.5 hover:bg-zinc-700 rounded ${index === 0 ? 'opacity-30' : ''}`}
+                    disabled={index === 0}
+                  >
+                    <ChevronUp size={10} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (index < projects.length - 1) reorderProjects(project.id, index + 1);
+                    }}
+                    className={`p-0.5 hover:bg-zinc-700 rounded ${index === projects.length - 1 ? 'opacity-30' : ''}`}
+                    disabled={index === projects.length - 1}
+                  >
+                    <ChevronDown size={10} />
+                  </button>
+                </div>
                 <div
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: project.color }}
@@ -1529,6 +1646,82 @@ export default function FleetingPage() {
               </button>
             </div>
           </div>
+
+          {/* Project Settings Bar - appears when a project is selected */}
+          {filterProject && (() => {
+            const selectedProject = projects.find(p => p.id === filterProject);
+            if (!selectedProject) return null;
+            return (
+              <div className="px-4 py-3 border-t border-zinc-800">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium"
+                    style={{ backgroundColor: selectedProject.color + '20', color: selectedProject.color }}
+                  >
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedProject.color }} />
+                    {selectedProject.name}
+                  </div>
+
+                  {selectedProject.app_path && (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(selectedProject.app_path!)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm"
+                      title={selectedProject.app_path}
+                    >
+                      <FolderCode size={16} className="text-blue-400" />
+                      App Path
+                    </button>
+                  )}
+
+                  {selectedProject.website_path && (
+                    <button
+                      onClick={() => navigator.clipboard.writeText(selectedProject.website_path!)}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm"
+                      title={selectedProject.website_path}
+                    >
+                      <Globe size={16} className="text-green-400" />
+                      Website Path
+                    </button>
+                  )}
+
+                  {selectedProject.feedback_url && (
+                    <a
+                      href={selectedProject.feedback_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm"
+                    >
+                      <MessageSquare size={16} className="text-purple-400" />
+                      Feedback
+                      <ExternalLink size={12} className="text-zinc-500" />
+                    </a>
+                  )}
+
+                  {selectedProject.custom_instructions && (
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(selectedProject.custom_instructions!);
+                        alert('Custom instructions copied to clipboard!');
+                      }}
+                      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm"
+                      title="Click to copy instructions"
+                    >
+                      <FileText size={16} className="text-yellow-400" />
+                      Instructions
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setProjectModal({ open: true, project: selectedProject })}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm ml-auto"
+                  >
+                    <Settings size={16} />
+                    Project Settings
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Quick Add - Desktop */}
           <div className="hidden sm:block px-4 pb-3">

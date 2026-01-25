@@ -15,6 +15,11 @@ export type Project = {
   status: 'active' | 'completed' | 'archived'
   color: string
   created_at: string
+  app_path: string | null
+  website_path: string | null
+  feedback_url: string | null
+  custom_instructions: string | null
+  sort_order: number
 }
 
 export type Thought = {
