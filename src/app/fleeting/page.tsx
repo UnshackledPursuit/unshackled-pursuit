@@ -36,6 +36,9 @@ import {
   FolderCode,
   Globe,
   MessageSquare,
+  Archive,
+  RotateCcw,
+  MessageCircle,
 } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import {
@@ -61,6 +64,7 @@ const COLUMNS = [
   { id: "processing", title: "Processing", color: "bg-yellow-500", icon: Clock },
   { id: "routed", title: "Routed", color: "bg-purple-500", icon: ExternalLink },
   { id: "done", title: "Done", color: "bg-green-500", icon: CheckCircle2 },
+  { id: "archived", title: "Archived", color: "bg-zinc-600", icon: Archive },
 ] as const;
 
 type ColumnId = (typeof COLUMNS)[number]["id"];
@@ -617,6 +621,68 @@ function ProjectModal({
   );
 }
 
+// Recycle Modal - for recycling done/archived items back to inbox with a note
+function RecycleModal({
+  thought,
+  onClose,
+  onRecycle,
+}: {
+  thought: Thought;
+  onClose: () => void;
+  onRecycle: (note: string) => void;
+}) {
+  const [note, setNote] = useState("");
+
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-zinc-900 rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg animate-slide-up sm:animate-fade-in">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="flex items-center gap-2">
+            <RotateCcw size={20} className="text-blue-400" />
+            <h2 className="text-lg font-semibold">Recycle to Inbox</h2>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-4">
+          <div className="p-3 bg-zinc-800 rounded-xl text-sm text-zinc-400 line-clamp-3">
+            {thought.content}
+          </div>
+
+          <div>
+            <label className="block text-sm text-zinc-400 mb-1">
+              <MessageCircle size={14} className="inline mr-1" />
+              Add a note (optional)
+            </label>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="w-full p-3 rounded-xl bg-zinc-800 border border-zinc-700 text-zinc-50 focus:outline-none focus:border-zinc-500 text-sm min-h-[80px]"
+              placeholder="Why is this being recycled? What needs to happen?"
+              autoFocus
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-2 p-4 border-t border-zinc-800">
+          <Button variant="outline" onClick={onClose} className="flex-1 border-zinc-700">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => onRecycle(note)}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <RotateCcw size={16} className="mr-2" />
+            Recycle
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Mobile Sidebar
 function MobileSidebar({
   isOpen,
@@ -699,12 +765,16 @@ function QuickActionsMenu({
   onClose,
   onMove,
   onDelete,
+  onRecycle,
 }: {
   thought: Thought;
   onClose: () => void;
   onMove: (status: ColumnId) => void;
   onDelete: () => void;
+  onRecycle?: () => void;
 }) {
+  const canRecycle = thought.status === "done" || thought.status === "archived";
+
   return (
     <div className="fixed inset-0 z-50 sm:hidden" onClick={onClose}>
       <div className="absolute inset-0 bg-black/60" />
@@ -713,6 +783,21 @@ function QuickActionsMenu({
           <p className="text-sm text-zinc-400 line-clamp-2">{thought.content}</p>
         </div>
         <div className="p-2">
+          {canRecycle && onRecycle && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (navigator.vibrate) navigator.vibrate(15);
+                onRecycle();
+                onClose();
+              }}
+              className="w-full mb-2 p-3 mx-2 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center gap-2 active:bg-blue-500/20"
+              style={{ width: 'calc(100% - 16px)' }}
+            >
+              <RotateCcw size={16} />
+              <span>Recycle with Note</span>
+            </button>
+          )}
           <p className="text-xs text-zinc-500 px-3 py-2">Move to:</p>
           <div className="grid grid-cols-2 gap-2 px-2">
             {COLUMNS.filter(c => c.id !== thought.status).map((column) => {
@@ -766,12 +851,14 @@ function ThoughtCard({
   onDelete,
   onEdit,
   onMove,
+  onRecycle,
 }: {
   thought: Thought;
   projects: Project[];
   onDelete: (id: string) => void;
   onEdit: (thought: Thought) => void;
   onMove?: (id: string, status: ColumnId) => void;
+  onRecycle?: (thought: Thought) => void;
 }) {
   const [showQuickActions, setShowQuickActions] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -822,6 +909,7 @@ function ThoughtCard({
           onClose={() => setShowQuickActions(false)}
           onMove={(status) => onMove(thought.id, status)}
           onDelete={() => onDelete(thought.id)}
+          onRecycle={onRecycle ? () => { setShowQuickActions(false); onRecycle(thought); } : undefined}
         />
       )}
       <Card
@@ -920,6 +1008,7 @@ function DroppableColumn({
   onDelete,
   onEdit,
   onMove,
+  onRecycle,
   isActive,
 }: {
   column: (typeof COLUMNS)[number];
@@ -928,6 +1017,7 @@ function DroppableColumn({
   onDelete: (id: string) => void;
   onEdit: (thought: Thought) => void;
   onMove?: (id: string, status: ColumnId) => void;
+  onRecycle?: (thought: Thought) => void;
   isActive?: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id });
@@ -956,6 +1046,7 @@ function DroppableColumn({
             onDelete={onDelete}
             onEdit={onEdit}
             onMove={onMove}
+            onRecycle={onRecycle}
           />
         ))}
         {thoughts.length === 0 && (
@@ -979,6 +1070,7 @@ export default function FleetingPage() {
   const [authLoading, setAuthLoading] = useState(false);
   const [activeThought, setActiveThought] = useState<Thought | null>(null);
   const [editingThought, setEditingThought] = useState<Thought | null>(null);
+  const [recycleModal, setRecycleModal] = useState<Thought | null>(null);
   const [projectModal, setProjectModal] = useState<{ open: boolean; project: Project | null }>({
     open: false,
     project: null,
@@ -1325,6 +1417,34 @@ export default function FleetingPage() {
     }
   }
 
+  async function recycleThought(id: string, note: string) {
+    const thought = thoughts.find(t => t.id === id);
+    if (!thought) return;
+
+    const timestamp = new Date().toLocaleDateString();
+    const updatedContent = note
+      ? `${thought.content}\n\n---\n**[${timestamp}]** ${note}`
+      : thought.content;
+
+    const { error } = await supabase
+      .from("fleeting_thoughts")
+      .update({
+        content: updatedContent,
+        status: "inbox",
+        processed_at: null,
+        ai_analysis: null
+      })
+      .eq("id", id);
+
+    if (!error) {
+      setThoughts(thoughts.map(t =>
+        t.id === id ? { ...t, content: updatedContent, status: "inbox", processed_at: null, ai_analysis: null } : t
+      ));
+      setRecycleModal(null);
+      setToast({ message: "Recycled to Inbox", type: "success" });
+    }
+  }
+
   async function createProject(data: { name: string; description: string; color: string; app_path?: string; website_path?: string; feedback_url?: string; custom_instructions?: string }) {
     if (!user) return;
 
@@ -1502,6 +1622,15 @@ export default function FleetingPage() {
               ? () => deleteProject(projectModal.project!.id)
               : undefined
           }
+        />
+      )}
+
+      {/* Recycle Modal */}
+      {recycleModal && (
+        <RecycleModal
+          thought={recycleModal}
+          onClose={() => setRecycleModal(null)}
+          onRecycle={(note) => recycleThought(recycleModal.id, note)}
         />
       )}
 
@@ -1698,17 +1827,23 @@ export default function FleetingPage() {
                   )}
 
                   {selectedProject.custom_instructions && (
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(selectedProject.custom_instructions!);
-                        alert('Custom instructions copied to clipboard!');
-                      }}
-                      className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm"
-                      title="Click to copy instructions"
-                    >
-                      <FileText size={16} className="text-yellow-400" />
-                      Instructions
-                    </button>
+                    <div className="relative group">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedProject.custom_instructions!);
+                          setToast({ message: "Instructions copied!", type: "success" });
+                        }}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm"
+                      >
+                        <FileText size={16} className="text-yellow-400" />
+                        Instructions
+                      </button>
+                      <div className="absolute left-0 top-full mt-2 w-80 p-3 bg-zinc-800 border border-zinc-700 rounded-lg text-xs text-zinc-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 shadow-xl">
+                        <p className="font-medium text-zinc-400 mb-1">Custom Instructions:</p>
+                        <p className="whitespace-pre-wrap line-clamp-6">{selectedProject.custom_instructions}</p>
+                        <p className="text-zinc-500 mt-2 text-[10px]">Click to copy</p>
+                      </div>
+                    </div>
                   )}
 
                   <button
@@ -1863,6 +1998,7 @@ export default function FleetingPage() {
                   projects={projects}
                   onDelete={deleteThought}
                   onEdit={setEditingThought}
+                  onRecycle={setRecycleModal}
                 />
               );
             })}
@@ -1897,6 +2033,7 @@ export default function FleetingPage() {
                   onDelete={deleteThought}
                   onEdit={setEditingThought}
                   onMove={moveThought}
+                  onRecycle={setRecycleModal}
                   isActive
                 />
               );

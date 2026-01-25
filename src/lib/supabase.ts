@@ -28,7 +28,7 @@ export type Thought = {
   content: string
   content_type: 'text' | 'voice' | 'image' | 'pdf' | 'link'
   source: 'manual' | 'shortcut' | 'share_extension' | 'agent' | 'folder_watch'
-  status: 'inbox' | 'processing' | 'routed' | 'done'
+  status: 'inbox' | 'processing' | 'routed' | 'done' | 'archived'
   captured_at: string
   priority: 'high' | 'medium' | 'low' | 'someday' | null
   tags: string[] | null
