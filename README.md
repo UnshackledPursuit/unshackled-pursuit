@@ -159,7 +159,7 @@ npm run process-inbox
 | content | text | The captured thought |
 | content_type | text | text, voice, image, pdf, link |
 | source | text | manual, shortcut, share_extension, agent, folder_watch |
-| status | text | inbox, processing, routed, done |
+| status | text | inbox, processing, routed, done, archived |
 | captured_at | timestamptz | When captured |
 | priority | text | high, medium, low, someday |
 | tags | text[] | Array of tags |
@@ -184,6 +184,11 @@ npm run process-inbox
 | status | text | active, completed, archived |
 | color | text | Hex color for UI |
 | created_at | timestamptz | When created |
+| app_path | text | Path to app source code |
+| website_path | text | Path to website code |
+| feedback_url | text | External feedback form URL |
+| custom_instructions | text | Context for Claude sessions |
+| sort_order | int | Display order in sidebar |
 
 ## Authentication
 
