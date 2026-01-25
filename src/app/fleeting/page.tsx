@@ -39,6 +39,10 @@ import {
   Archive,
   RotateCcw,
   MessageCircle,
+  HelpCircle,
+  Database,
+  Workflow,
+  Cpu,
 } from "lucide-react";
 import { User } from "@supabase/supabase-js";
 import {
@@ -683,6 +687,126 @@ function RecycleModal({
   );
 }
 
+// Architecture Reference Modal
+function ArchitectureModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 rounded-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800 sticky top-0 bg-zinc-900 z-10">
+          <div className="flex items-center gap-2">
+            <HelpCircle size={20} className="text-blue-400" />
+            <h2 className="text-lg font-semibold">Architecture Reference</h2>
+          </div>
+          <button onClick={onClose} className="p-2 hover:bg-zinc-800 rounded-full">
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="p-4 space-y-6 text-sm">
+          {/* Pipeline Overview */}
+          <section>
+            <h3 className="flex items-center gap-2 font-semibold text-zinc-200 mb-2">
+              <Workflow size={16} className="text-purple-400" />
+              Pipeline Flow
+            </h3>
+            <div className="bg-zinc-800 rounded-xl p-3 font-mono text-xs">
+              <div className="text-blue-400">Capture</div>
+              <div className="text-zinc-500 pl-2">↓ Manual, Voice, Shortcuts, Feedback Forms</div>
+              <div className="text-yellow-400 mt-1">Inbox</div>
+              <div className="text-zinc-500 pl-2">↓ "Process with AI" button</div>
+              <div className="text-orange-400 mt-1">Processing</div>
+              <div className="text-zinc-500 pl-2">↓ AI assigns priority, project, destination</div>
+              <div className="text-purple-400 mt-1">Routed</div>
+              <div className="text-zinc-500 pl-2">↓ Ready for action</div>
+              <div className="text-green-400 mt-1">Done</div>
+              <div className="text-zinc-500 pl-2">↓ Verify completion</div>
+              <div className="text-zinc-400 mt-1">Archived</div>
+            </div>
+          </section>
+
+          {/* Data */}
+          <section>
+            <h3 className="flex items-center gap-2 font-semibold text-zinc-200 mb-2">
+              <Database size={16} className="text-green-400" />
+              Data Structure
+            </h3>
+            <div className="space-y-2 text-zinc-400">
+              <div className="bg-zinc-800 rounded-lg p-2">
+                <span className="text-zinc-200">fleeting_thoughts</span> - All captured items
+                <div className="text-xs mt-1">content, status, priority, project_id, ai_analysis, tags</div>
+              </div>
+              <div className="bg-zinc-800 rounded-lg p-2">
+                <span className="text-zinc-200">projects</span> - Project metadata
+                <div className="text-xs mt-1">name, app_path, website_path, feedback_url, custom_instructions</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Key Files */}
+          <section>
+            <h3 className="flex items-center gap-2 font-semibold text-zinc-200 mb-2">
+              <FileText size={16} className="text-yellow-400" />
+              Key Files
+            </h3>
+            <div className="bg-zinc-800 rounded-xl p-3 font-mono text-xs space-y-1">
+              <div><span className="text-blue-400">src/app/fleeting/page.tsx</span> - Main UI</div>
+              <div><span className="text-blue-400">src/lib/supabase.ts</span> - Types & client</div>
+              <div><span className="text-blue-400">src/app/api/process/route.ts</span> - AI processing</div>
+              <div><span className="text-blue-400">src/app/api/capture/route.ts</span> - External capture</div>
+              <div><span className="text-blue-400">docs/PIPELINE_ANALYSIS.md</span> - Full architecture</div>
+            </div>
+          </section>
+
+          {/* Project Context */}
+          <section>
+            <h3 className="flex items-center gap-2 font-semibold text-zinc-200 mb-2">
+              <Cpu size={16} className="text-cyan-400" />
+              For Claude Sessions
+            </h3>
+            <div className="text-zinc-400 space-y-2">
+              <p>Each project has <span className="text-zinc-200">custom_instructions</span> that provide context for Claude.</p>
+              <p>Click a project → See settings bar → Copy instructions for agent context.</p>
+              <div className="bg-zinc-800 rounded-lg p-2 text-xs">
+                <span className="text-zinc-500">Tip:</span> When starting a Claude session, paste the project's custom instructions to give full context.
+              </div>
+            </div>
+          </section>
+
+          {/* Quick Actions */}
+          <section>
+            <h3 className="font-semibold text-zinc-200 mb-2">Quick Reference</h3>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-zinc-800 rounded-lg p-2">
+                <span className="text-zinc-200">Long-press card</span>
+                <div className="text-zinc-500">Quick actions menu</div>
+              </div>
+              <div className="bg-zinc-800 rounded-lg p-2">
+                <span className="text-zinc-200">Click card</span>
+                <div className="text-zinc-500">Edit details</div>
+              </div>
+              <div className="bg-zinc-800 rounded-lg p-2">
+                <span className="text-zinc-200">Drag card</span>
+                <div className="text-zinc-500">Move between columns</div>
+              </div>
+              <div className="bg-zinc-800 rounded-lg p-2">
+                <span className="text-zinc-200">Filter by project</span>
+                <div className="text-zinc-500">Click project in sidebar</div>
+              </div>
+            </div>
+          </section>
+
+          {/* Future */}
+          <section className="border-t border-zinc-800 pt-4">
+            <p className="text-zinc-500 text-xs">
+              <span className="text-zinc-400">Future:</span> Autonomous pipeline with Mac polling, Vercel cron, and agent handoff. See docs/PIPELINE_ANALYSIS.md
+            </p>
+          </section>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Mobile Sidebar
 function MobileSidebar({
   isOpen,
@@ -1071,6 +1195,7 @@ export default function FleetingPage() {
   const [activeThought, setActiveThought] = useState<Thought | null>(null);
   const [editingThought, setEditingThought] = useState<Thought | null>(null);
   const [recycleModal, setRecycleModal] = useState<Thought | null>(null);
+  const [showArchitecture, setShowArchitecture] = useState(false);
   const [projectModal, setProjectModal] = useState<{ open: boolean; project: Project | null }>({
     open: false,
     project: null,
@@ -1634,6 +1759,11 @@ export default function FleetingPage() {
         />
       )}
 
+      {/* Architecture Reference Modal */}
+      {showArchitecture && (
+        <ArchitectureModal onClose={() => setShowArchitecture(false)} />
+      )}
+
       {/* Quick Capture Modal */}
       <QuickCaptureModal
         isOpen={quickCaptureOpen}
@@ -1758,6 +1888,13 @@ export default function FleetingPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowArchitecture(true)}
+                className="p-2 hover:bg-zinc-800 rounded-lg text-zinc-400 hover:text-zinc-200"
+                title="Architecture Reference"
+              >
+                <HelpCircle size={18} />
+              </button>
               <Button
                 variant="outline"
                 size="sm"
