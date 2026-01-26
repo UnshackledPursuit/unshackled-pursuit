@@ -772,6 +772,29 @@ function ArchitectureModal({ onClose }: { onClose: () => void }) {
             </div>
           </section>
 
+          {/* Conductor */}
+          <section>
+            <h3 className="flex items-center gap-2 font-semibold text-zinc-200 mb-2">
+              <Sparkles size={16} className="text-pink-400" />
+              Conductor (Orchestration)
+            </h3>
+            <div className="text-zinc-400 space-y-2">
+              <p><span className="text-zinc-200">Conductor</span> is the project manager agent that orchestrates all projects and agents.</p>
+              <div className="bg-zinc-800 rounded-lg p-2 text-xs space-y-1">
+                <div><span className="text-pink-400">Ralph</span> - Builder agent, executes specs</div>
+                <div><span className="text-blue-400">Explorer</span> - Research agent, investigates codebases</div>
+                <div><span className="text-purple-400">Conductor</span> - Orchestrator, coordinates everything</div>
+              </div>
+              <div className="bg-zinc-800 rounded-lg p-2 text-xs mt-2">
+                <div className="text-zinc-500 mb-1">Master File (edit to sync):</div>
+                <div className="font-mono text-zinc-300">/Construct/CONDUCTOR.md</div>
+              </div>
+              <div className="bg-zinc-800 rounded-lg p-2 text-xs">
+                <span className="text-zinc-500">To start:</span> <span className="font-mono text-zinc-300">claude "Read /Construct/CONDUCTOR.md"</span>
+              </div>
+            </div>
+          </section>
+
           {/* Quick Actions */}
           <section>
             <h3 className="font-semibold text-zinc-200 mb-2">Quick Reference</h3>
