@@ -1,25 +1,70 @@
-# AGENTS.md - Claude Context for Fleeting Thoughts
+# Fleeting Thoughts Pipeline - Agent Context
 
 > **Project:** Unshackled Pursuit / Fleeting Thoughts
 > **Type:** Next.js 16 + Supabase + AI Processing
-> **Last Updated:** 2026-01-25
+> **Last Updated:** 2026-02-04
+> **Canonical Location:** This repo is the single source of truth for all Fleeting Thoughts code and documentation.
 
 ---
 
-## Quick Context
+## What This Is
 
-This is a personal thought capture and processing system. Ideas flow through a kanban pipeline: **Inbox → Processing → Routed → Done → Archived**.
+A frictionless pipeline for capturing fleeting thoughts and routing them to execution. The goal: run `claude "process fleeting thoughts"` and have it work with full context.
+
+**Key Principle:** Use Claude CLI (subscription) or local models - NO API costs.
+
+---
+
+## Architecture Overview
+
+```
+Capture (Website/API) → Store (Supabase) → Triage (Claude CLI or Local)
+    → Process → Route to Construct/Ideas/ → Generate SPEC.md
+```
+
+| Layer | Implementation | Status |
+|-------|----------------|--------|
+| **Intake** | Website Kanban at unshackledpursuit.com/fleeting | Working |
+| **Storage** | Supabase (fleeting_thoughts, projects tables) | Working |
+| **Folder Watch** | `agents/folder-watcher.ts` - iCloud → Supabase | Working (not scheduled) |
+| **Triage** | `agents/process-inbox.ts` - keyword categorization | Working |
+| **AI Processing** | Claude CLI (this conversation) | Working |
+| **Output** | Creates folders + SPEC.md in `Construct/Ideas/` | Working |
+
+---
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
+| `AGENTS.md` | **This file** - start here for context |
 | `src/app/fleeting/page.tsx` | Main UI - all components, state, modals |
 | `src/lib/supabase.ts` | Types for Thought, Project, constants |
 | `src/app/api/process/route.ts` | AI processing endpoint |
 | `src/app/api/capture/route.ts` | External capture endpoint |
-| `docs/PIPELINE_ANALYSIS.md` | Architecture & autonomous pipeline plans |
+| `agents/folder-watcher.ts` | Ingests .md files from iCloud → Supabase |
+| `agents/process-inbox.ts` | Keyword-based categorization |
+| `agents/process-thoughts.ts` | AI analysis (needs API key, prefer CLI) |
+| `docs/AUTONOMOUS_INFRASTRUCTURE_SPEC.md` | Full technical spec (834 lines) |
+| `docs/AUTONOMOUS_INFRASTRUCTURE_SPEC_v2.md` | Condensed executive summary |
+| `docs/PIPELINE_ANALYSIS.md` | Gap analysis |
 | `docs/FLEETING_FUTURE_FEATURES.md` | Feature roadmap |
+
+---
+
+## Agent Scripts
+
+**Location:** `agents/`
+
+| Script | Lines | Purpose | LLM |
+|--------|-------|---------|-----|
+| `folder-watcher.ts` | 240 | Ingests .md files from iCloud → Supabase | No |
+| `process-inbox.ts` | 274 | Keyword-based categorization | No |
+| `process-thoughts.ts` | 481 | AI analysis + SPEC.md generation | API (prefer CLI) |
+| `AGENTS.md` | 104 | Processing instructions for agents | - |
+| `process-inbox.md` | 64 | Prompt file for Claude CLI | - |
+
+---
 
 ## Data Model
 
@@ -35,6 +80,8 @@ This is a personal thought capture and processing system. Ideas flow through a k
   ai_analysis: string | null
   is_actionable: boolean | null
   suggested_destination: 'things' | 'reminders' | 'calendar' | 'notes' | 'reference' | 'archive' | null
+  routed_to: string | null  // Path to generated SPEC.md
+  processed_at: string | null
 }
 ```
 
@@ -45,69 +92,110 @@ This is a personal thought capture and processing system. Ideas flow through a k
   name: string
   description: string | null
   color: string
-  app_path: string | null        // Path to app source code
-  website_path: string | null    // Path to website code
-  feedback_url: string | null    // External feedback form URL
-  custom_instructions: string | null  // Context for Claude sessions
+  app_path: string | null
+  website_path: string | null
+  feedback_url: string | null
+  custom_instructions: string | null
   sort_order: number
 }
 ```
 
-## UI Components (all in page.tsx)
+---
 
-- `ProjectModal` - Create/edit projects with advanced settings
-- `RecycleModal` - Return done/archived items to inbox with notes
-- `ArchitectureModal` - Quick reference (? button in header)
-- `ThoughtCard` - Individual thought with long-press actions
-- `DroppableColumn` - Kanban column with drag-drop
-- `QuickActionsMenu` - Mobile action sheet
+## Quick Commands
+
+```bash
+# Process thoughts with Claude CLI (recommended - no API cost)
+claude "Fetch thoughts in processing status from Supabase, analyze each, create SPEC.md files in Construct/Ideas/"
+
+# Run folder watcher (ingest .md from iCloud)
+npx ts-node --project agents/tsconfig.json agents/folder-watcher.ts
+
+# Development
+npm run dev          # Start dev server
+npm run build        # Build for production
+```
+
+---
+
+## Environment Variables
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://ygcgzwlzyrvwshtlxpsc.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<from Supabase dashboard>
+SUPABASE_SERVICE_KEY=<service_role key from Supabase>
+CAPTURE_TOKEN=<for /api/capture endpoint>
+# ANTHROPIC_API_KEY not needed - use Claude CLI instead!
+```
+
+---
 
 ## Pipeline Flow
 
 ```
-Capture → Inbox → [AI Process] → Processing → Routed → Done → Archived
-                       ↓
-            Sets: priority, project, destination, analysis
+┌─────────────────┐     ┌──────────────┐     ┌──────────────────┐
+│    Capture      │ ──▶ │   Supabase   │ ──▶ │ process-inbox.ts │
+│ (Website/iCloud)│     │   (Store)    │     │   (Categorize)   │
+└─────────────────┘     └──────────────┘     └────────┬─────────┘
+                                                      │
+                                                      ▼ status='processing'
+┌─────────────────┐     ┌──────────────┐     ┌──────────────────┐
+│  Construct/     │ ◀── │  Claude CLI  │ ◀── │   Claude CLI     │
+│  Ideas/SPEC.md  │     │  (Analyze)   │     │   (or Local LLM) │
+└─────────────────┘     └──────────────┘     └──────────────────┘
 ```
-
-## Project Context Feature
-
-Each project has `custom_instructions` field. When working on a project:
-1. User clicks project in sidebar
-2. Project settings bar appears with quick actions
-3. "Instructions" button copies context to clipboard
-4. Paste into Claude session for full project context
-
-## External Integrations
-
-- **WaypointHub Feedback** → Posts to `/api/capture` → Creates thought with source "waypoint_feedback"
-- **iOS Shortcuts** → POST to `/api/capture` with token auth
-
-## Commands
-
-```bash
-npm run dev          # Start dev server
-npm run build        # Build for production
-npm run watch-folder # Process iCloud folder (agents/)
-npm run process-inbox # AI process pending thoughts
-```
-
-## Environment Variables
-
-```
-NEXT_PUBLIC_SUPABASE_URL
-NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_KEY      # For API routes
-CAPTURE_TOKEN             # For external capture auth
-```
-
-## Future Work
-
-See `docs/PIPELINE_ANALYSIS.md` for autonomous pipeline plans:
-- Mac polling for remote triggers
-- Vercel cron for scheduled processing
-- Agent handoff with project context
 
 ---
 
-*This file provides context for Claude Code sessions working on this project.*
+## UI Components (in page.tsx)
+
+- `ProjectModal` - Create/edit projects with advanced settings
+- `RecycleModal` - Return done/archived items to inbox
+- `ArchitectureModal` - Quick reference (? button)
+- `ThoughtCard` - Individual thought with long-press actions
+- `DroppableColumn` - Kanban column with drag-drop
+- `QuickActionsMenu` - Mobile action sheet
+
+---
+
+## Infrastructure
+
+| Device | Role | Connection |
+|--------|------|------------|
+| **MacBook** | Heavy compute, Claude CLI | Primary |
+| **Pi 5** | Always-on coordinator, Ollama (future) | Via Tailscale |
+| **iPhone** | Capture via website | Browser |
+
+---
+
+## File Locations (Updated 2026-02-04)
+
+All Fleeting Thoughts code and documentation is now consolidated in this repo:
+
+```
+unshackled-pursuit/           ← THIS REPO (canonical location)
+├── AGENTS.md                 ← This file (hub context)
+├── agents/                   ← Processing scripts
+├── docs/
+│   ├── AUTONOMOUS_INFRASTRUCTURE_SPEC.md
+│   ├── AUTONOMOUS_INFRASTRUCTURE_SPEC_v2.md
+│   ├── PIPELINE_ANALYSIS.md
+│   └── FLEETING_FUTURE_FEATURES.md
+├── src/                      ← Website code
+└── .env.local               ← Keys (gitignored)
+
+External (not in this repo):
+├── ~/...Apps/Construct/Ideas/   ← Generated SPEC.md files go here
+└── ~/...Apps/FleetingThoughts/  ← Legacy location, files moved here
+```
+
+---
+
+## External Integrations
+
+- **WaypointHub Feedback** → POST to `/api/capture` → Creates thought with source "waypoint_feedback"
+- **iOS Shortcuts** → POST to `/api/capture` with Bearer token auth
+
+---
+
+*This file provides central context for Claude Code sessions working on the Fleeting Thoughts pipeline.*
