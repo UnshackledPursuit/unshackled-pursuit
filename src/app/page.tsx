@@ -62,9 +62,9 @@ export default function Home() {
 
       {/* Projects Section */}
       <section id="projects" className="px-6 py-24 bg-zinc-50 dark:bg-zinc-950">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-6xl">
           <h2 className="mb-12 text-center text-3xl font-bold sm:text-4xl">Projects</h2>
-          <div className="grid gap-8 lg:grid-cols-2">
+          <div className="grid gap-8 lg:grid-cols-3">
             {/* WaypointHub Card */}
             <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 overflow-hidden">
               <div className="relative h-48 w-full">
@@ -102,6 +102,50 @@ export default function Home() {
                 </ul>
                 <Button className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-700 dark:hover:bg-zinc-200" asChild>
                   <a href="https://waypointhub.app" target="_blank" rel="noopener noreferrer">
+                    Visit Site
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Spatialis Card */}
+            <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 overflow-hidden">
+              <div className="relative h-48 w-full bg-gradient-to-br from-zinc-900 to-zinc-950 flex items-center justify-center">
+                <Image
+                  src="/spatialis-icon.png"
+                  alt="Spatialis app icon"
+                  width={120}
+                  height={120}
+                  className="rounded-3xl"
+                />
+              </div>
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <Image
+                    src="/spatialis-icon.png"
+                    alt="Spatialis logo"
+                    width={40}
+                    height={40}
+                    className="rounded-lg"
+                  />
+                  <CardTitle className="text-zinc-900 dark:text-zinc-50 text-2xl">Spatialis</CardTitle>
+                </div>
+                <CardDescription className="text-zinc-500 dark:text-zinc-400">
+                  3D drawing app for visionOS
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-4 text-zinc-600 dark:text-zinc-300">
+                  Draw in three dimensions with spatial brushes, layers, and symmetry tools. Create directly in your space with intuitive hand tracking—sketch, sculpt, and export your creations as 3D models.
+                </p>
+                <ul className="mb-6 space-y-2 text-sm text-zinc-500 dark:text-zinc-400">
+                  <li>• Spatial brushes with hand tracking</li>
+                  <li>• Layers, symmetry modes, materials</li>
+                  <li>• Import images & 3D models</li>
+                  <li>• Free to try, $14.99 lifetime unlock</li>
+                </ul>
+                <Button className="bg-zinc-900 dark:bg-white text-white dark:text-zinc-950 hover:bg-zinc-700 dark:hover:bg-zinc-200" asChild>
+                  <a href="https://spatialis.app" target="_blank" rel="noopener noreferrer">
                     Visit Site
                   </a>
                 </Button>
