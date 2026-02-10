@@ -192,19 +192,29 @@ function SwipeDots({ columns, activeColumn }: { columns: typeof COLUMNS; activeC
   );
 }
 
-// Quick Capture Modal with voice recording indicator
+// Quick Capture Modal with voice recording indicator + project/priority selectors
 function QuickCaptureModal({
   isOpen,
   onClose,
   onSubmit,
   initialContent,
   isRecording,
+  projects,
+  captureProject,
+  setCaptureProject,
+  capturePriority,
+  setCapturePriority,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (content: string) => void;
   initialContent?: string;
   isRecording?: boolean;
+  projects: Project[];
+  captureProject: string | null;
+  setCaptureProject: (v: string | null) => void;
+  capturePriority: Priority | null;
+  setCapturePriority: (v: Priority | null) => void;
 }) {
   const [content, setContent] = useState(initialContent || "");
   const [submitting, setSubmitting] = useState(false);
@@ -281,6 +291,39 @@ function QuickCaptureModal({
             }`}
             autoFocus={!isRecording}
           />
+
+          {/* Project & Priority selectors */}
+          <div className="flex gap-2 mt-3 flex-wrap">
+            {/* Priority bubbles */}
+            <div className="flex gap-1.5">
+              {(Object.entries(PRIORITIES) as [Priority, typeof PRIORITIES[Priority]][]).map(([key, val]) => (
+                <button
+                  key={key}
+                  onClick={() => setCapturePriority(capturePriority === key ? null : key)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                    capturePriority === key
+                      ? `${val.color} text-white`
+                      : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                  }`}
+                >
+                  {val.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Project selector */}
+            <select
+              value={captureProject || ""}
+              onChange={(e) => setCaptureProject(e.target.value || null)}
+              className="px-3 py-1.5 rounded-full text-xs font-medium bg-zinc-800 text-zinc-300 border-none focus:outline-none focus:ring-1 focus:ring-zinc-600 appearance-none"
+              style={{ backgroundImage: 'none' }}
+            >
+              <option value="">Project...</option>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="p-4 pt-0 pb-safe-bottom">
           <button
@@ -1214,6 +1257,8 @@ export default function FleetingPage() {
   const [loading, setLoading] = useState(true);
   const [newThought, setNewThought] = useState("");
   const [adding, setAdding] = useState(false);
+  const [captureProject, setCaptureProject] = useState<string | null>(null);
+  const [capturePriority, setCapturePriority] = useState<Priority | null>(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [activeThought, setActiveThought] = useState<Thought | null>(null);
   const [editingThought, setEditingThought] = useState<Thought | null>(null);
@@ -1457,6 +1502,8 @@ export default function FleetingPage() {
     let contentType: 'text' | 'link' | 'voice' | 'image' | 'pdf' = 'text';
     if (isUrl) contentType = 'link';
 
+    const selectedProject = captureProject || filterProject || null;
+
     try {
       const { data, error } = await supabase
         .from("fleeting_thoughts")
@@ -1468,7 +1515,8 @@ export default function FleetingPage() {
           status: "inbox",
           url: isUrl ? thoughtContent : null,
           tags: isMarkdown ? ['spec', 'markdown'] : null,
-          project_id: filterProject || null,
+          project_id: selectedProject,
+          priority: capturePriority || null,
         })
         .select()
         .single();
@@ -1477,6 +1525,8 @@ export default function FleetingPage() {
         setThoughts(prev => [data, ...prev]);
         setNewThought("");
         setExpandedInput(false);
+        setCaptureProject(null);
+        setCapturePriority(null);
         if (navigator.vibrate) navigator.vibrate([10, 50, 10]);
         setToast({ message: "Captured!", type: "success" });
       } else if (error) {
@@ -1794,6 +1844,11 @@ export default function FleetingPage() {
         onSubmit={addThought}
         initialContent={quickCaptureContent}
         isRecording={isListening}
+        projects={projects}
+        captureProject={captureProject}
+        setCaptureProject={setCaptureProject}
+        capturePriority={capturePriority}
+        setCapturePriority={setCapturePriority}
       />
 
       {/* Mobile Sidebar */}
@@ -1893,16 +1948,16 @@ export default function FleetingPage() {
       <div className="lg:pl-64 pb-24 sm:pb-0">
         {/* Header */}
         <div className="sticky top-0 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800 z-20">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <button
                 onClick={() => setShowProjects(true)}
-                className="p-2 hover:bg-zinc-800 rounded-lg lg:hidden"
+                className="p-2 hover:bg-zinc-800 rounded-lg lg:hidden flex-shrink-0"
               >
                 <Menu size={20} />
               </button>
-              <div>
-                <h1 className="text-xl font-bold">Fleeting Thoughts</h1>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold truncate">Fleeting Thoughts</h1>
                 {filterProject && (
                   <p className="text-xs text-zinc-400">
                     {projects.find(p => p.id === filterProject)?.name}
@@ -1941,8 +1996,8 @@ export default function FleetingPage() {
             const selectedProject = projects.find(p => p.id === filterProject);
             if (!selectedProject) return null;
             return (
-              <div className="px-4 py-3 border-t border-zinc-800">
-                <div className="flex items-center gap-3 flex-wrap">
+              <div className="px-4 py-3 border-t border-zinc-800 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-2 sm:gap-3 sm:flex-wrap min-w-max sm:min-w-0">
                   <div
                     className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium"
                     style={{ backgroundColor: selectedProject.color + '20', color: selectedProject.color }}
@@ -2045,6 +2100,42 @@ export default function FleetingPage() {
               >
                 {adding ? <Loader2 className="animate-spin" size={20} /> : <Plus size={20} />}
               </Button>
+            </div>
+            {/* Project & Priority selectors - Desktop */}
+            <div className="flex gap-2 mt-2 items-center flex-wrap">
+              <div className="flex gap-1.5">
+                {(Object.entries(PRIORITIES) as [Priority, typeof PRIORITIES[Priority]][]).map(([key, val]) => (
+                  <button
+                    key={key}
+                    onClick={() => setCapturePriority(capturePriority === key ? null : key)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                      capturePriority === key
+                        ? `${val.color} text-white`
+                        : 'bg-zinc-900 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 border border-zinc-800'
+                    }`}
+                  >
+                    {val.name}
+                  </button>
+                ))}
+              </div>
+              <select
+                value={captureProject || ""}
+                onChange={(e) => setCaptureProject(e.target.value || null)}
+                className="px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-900 text-zinc-400 border border-zinc-800 focus:outline-none focus:border-zinc-600"
+              >
+                <option value="">Project...</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+              {(captureProject || capturePriority) && (
+                <button
+                  onClick={() => { setCaptureProject(null); setCapturePriority(null); }}
+                  className="text-xs text-zinc-500 hover:text-zinc-300 ml-1"
+                >
+                  Clear
+                </button>
+              )}
             </div>
           </div>
 
