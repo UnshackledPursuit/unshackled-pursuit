@@ -2,7 +2,7 @@
 
 > **Project:** Unshackled Pursuit / Fleeting Thoughts
 > **Type:** Next.js 16 + Supabase + AI Processing
-> **Last Updated:** 2026-02-04
+> **Last Updated:** 2026-02-10
 > **Canonical Location:** This repo is the single source of truth for all Fleeting Thoughts code and documentation.
 
 ---
@@ -45,8 +45,8 @@ Capture (Website/API) → Store (Supabase) → Triage (Claude CLI or Local)
 | `agents/folder-watcher.ts` | Ingests .md files from iCloud → Supabase |
 | `agents/process-inbox.ts` | Keyword-based categorization |
 | `agents/process-thoughts.ts` | AI analysis (needs API key, prefer CLI) |
-| `docs/AUTONOMOUS_INFRASTRUCTURE_SPEC.md` | Full technical spec (834 lines) |
-| `docs/AUTONOMOUS_INFRASTRUCTURE_SPEC_v2.md` | Condensed executive summary |
+| `agents/fleeting-skill-copy.md` | Backup of /fleeting skill (keep in sync with `~/.claude/skills/fleeting/SKILL.md`) |
+| `docs/PIPELINE_LEDGER.md` | Routing decision log — tracks all pipeline actions for study/learning |
 | `docs/PIPELINE_ANALYSIS.md` | Gap analysis |
 | `docs/FLEETING_FUTURE_FEATURES.md` | Feature roadmap |
 
@@ -61,6 +61,7 @@ Capture (Website/API) → Store (Supabase) → Triage (Claude CLI or Local)
 | `folder-watcher.ts` | 240 | Ingests .md files from iCloud → Supabase | No |
 | `process-inbox.ts` | 274 | Keyword-based categorization | No |
 | `process-thoughts.ts` | 481 | AI analysis + SPEC.md generation | API (prefer CLI) |
+| `fleeting-skill-copy.md` | — | Backup of /fleeting skill | - |
 | `AGENTS.md` | 104 | Processing instructions for agents | - |
 | `process-inbox.md` | 64 | Prompt file for Claude CLI | - |
 
@@ -177,8 +178,7 @@ unshackled-pursuit/           ← THIS REPO (canonical location)
 ├── AGENTS.md                 ← This file (hub context)
 ├── agents/                   ← Processing scripts
 ├── docs/
-│   ├── AUTONOMOUS_INFRASTRUCTURE_SPEC.md
-│   ├── AUTONOMOUS_INFRASTRUCTURE_SPEC_v2.md
+│   ├── PIPELINE_LEDGER.md              ← Routing decision log (new)
 │   ├── PIPELINE_ANALYSIS.md
 │   └── FLEETING_FUTURE_FEATURES.md
 ├── src/                      ← Website code
@@ -186,7 +186,8 @@ unshackled-pursuit/           ← THIS REPO (canonical location)
 
 External (not in this repo):
 ├── ~/...Apps/Construct/Ideas/   ← Generated SPEC.md files go here
-└── ~/...Apps/FleetingThoughts/  ← Legacy location, files moved here
+├── ~/...Apps/FleetingThoughts/  ← Hub (CLAUDE.md + AGENTS.md + _processed/)
+└── ~/.claude/skills/fleeting/SKILL.md  ← Live /fleeting skill
 ```
 
 ---

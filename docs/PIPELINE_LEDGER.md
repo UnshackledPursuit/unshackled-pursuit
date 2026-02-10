@@ -111,7 +111,13 @@ Each session that processes thoughts appends entries to the table below. Entries
 | 2026-02-10 | `b8e4650b` | Open Source AI Models Reference | moved-to-processed | Fleeting Thoughts | Routed file moved from FleetingThoughts/ to _processed/. | `_processed/open-source-ai-models-spec.md` |
 | 2026-02-10 | `9d24412a` | Local AI Setup Overview | moved-to-processed | Fleeting Thoughts | Routed file moved from FleetingThoughts/ to _processed/. | `_processed/local-ai-setup-overview.pdf` |
 
-**Session complete.** All pending actions resolved.
+| 2026-02-10 | `7922d618` | Autonomous Infrastructure Spec (full, 834 lines) | created from file scan + moved-to-processed | Fleeting Thoughts | 5-phase vision doc. Reference material for pipeline direction. Moved to _processed/, deleted duplicate from unshackled-pursuit/docs/. | Routed. `_processed/AUTONOMOUS_INFRASTRUCTURE_SPEC.md` |
+| 2026-02-10 | `3f7fd349` | Autonomous Infrastructure Spec v2 (condensed) | created from file scan + moved-to-processed | Fleeting Thoughts | Executive summary of vision doc. Moved to _processed/, deleted duplicate from unshackled-pursuit/docs/. | Routed. `_processed/AUTONOMOUS_INFRASTRUCTURE_SPEC_v2.md` |
+| 2026-02-10 | — | AGENTS.md updated to 2026-02-10 | infrastructure | Fleeting Thoughts | Full refresh: added file scanning, _processed/ workflow, Pipeline Ledger section, Infrastructure/Automation category, updated Key Locations and Current State. | FleetingThoughts/AGENTS.md updated. |
+| 2026-02-10 | — | CLAUDE.md updated | infrastructure | Fleeting Thoughts | Refreshed file structure, added file scanning and ledger to First Steps. | FleetingThoughts/CLAUDE.md updated. |
+| 2026-02-10 | — | Deleted duplicate spec files from repo | cleanup | Fleeting Thoughts | AUTONOMOUS_INFRASTRUCTURE_SPEC.md and v2 removed from unshackled-pursuit/docs/ — originals kept in FleetingThoughts/_processed/. | Duplicates removed. |
+
+**Session complete.** All actions resolved. Pipeline clean: 0 inbox, 1 processing, 10 routed, 26 done, 13 archived.
 
 ---
 

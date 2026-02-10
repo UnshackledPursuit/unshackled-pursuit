@@ -35,7 +35,6 @@ Before querying Supabase, scan the FleetingThoughts folder for files that aren't
 
 **What to scan for:** Any PDF, .md, or other document files in the top-level folder that are NOT:
 - `CLAUDE.md`, `AGENTS.md` (hub docs — always stay)
-- `AUTONOMOUS_INFRASTRUCTURE_SPEC.md`, `AUTONOMOUS_INFRASTRUCTURE_SPEC_v2.md` (reference docs — always stay)
 - Files already in `_processed/` subfolder
 
 **What to do with unprocessed files:**
@@ -210,7 +209,6 @@ Archived (fully consumed, reference only)
 | Hub (start here) | `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/FleetingThoughts/` |
 | Hub AGENTS.md | `FleetingThoughts/AGENTS.md` |
 | Processed files | `FleetingThoughts/_processed/` |
-| Full Spec | `FleetingThoughts/AUTONOMOUS_INFRASTRUCTURE_SPEC.md` |
 | Website Code | `Websites/DKRHUB/unshackled-pursuit/` |
 | Agent Scripts | `Websites/DKRHUB/unshackled-pursuit/agents/` |
 | Pipeline Ledger | `Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md` |
