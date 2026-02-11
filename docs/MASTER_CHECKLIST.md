@@ -361,6 +361,80 @@ These are source material — consumed and distilled into this checklist. They r
 
 **Pipeline State:** 3 new split-children (routed), original marked done
 
+### Next Session: SSH + Ollama Sprint (Tiers 1-3 Collapse)
+
+**Insight:** SSH from Pi 5 → Mac via Tailscale runs scripts in a full user session with iCloud access. This bypasses the entire launchd/FDA permission problem AND sets up the infrastructure for Tiers 2-3 simultaneously.
+
+**Proposed architecture:**
+```
+Pi 5 (cron every 5 min)                    Mac (via SSH over Tailscale)
+├── Check: is Mac awake?                    ├── folder-watcher.ts (iCloud → Supabase)
+│   └── WoL if needed                      ├── process-inbox.ts (keyword triage)
+├── SSH into Mac ──────────────────────────→├── process-thoughts.ts (Ollama enrichment)
+├── Lightweight triage (Ollama on Pi 5)     └── Ollama API at localhost:11434
+├── Daily digest (7am, curl Supabase)
+└── Telegram bot (capture → Supabase)
+```
+
+**What to implement (in order):**
+
+1. **Ollama on Mac** (~10 min)
+   - `brew install ollama && ollama serve`
+   - `ollama pull llama3.2:3b` (fast classifier, ~2GB)
+   - Verify: `curl http://localhost:11434/api/generate -d '{"model":"llama3.2:3b","prompt":"test"}'`
+
+2. **Passwordless SSH: Pi 5 → Mac** (~15 min)
+   - On Pi 5: `ssh-keygen` (if not already done)
+   - Copy key: `ssh-copy-id dylanrussell@<mac-tailscale-ip>`
+   - Enable Remote Login on Mac: System Settings → General → Sharing → Remote Login
+   - Test: `ssh dylanrussell@<mac-tailscale-ip> "echo hello"`
+   - Test with iCloud: `ssh dylanrussell@<mac-tailscale-ip> "ls ~/Library/Mobile\ Documents/com~apple~CloudDocs/Assets/Learning/Apps/FleetingThoughts/"`
+
+3. **Convert `process-thoughts.ts`** (~45 min)
+   - Replace Anthropic API calls with Ollama REST (`http://localhost:11434/api/generate`)
+   - Remove SPEC.md generation (no-graduation rule)
+   - Add pipeline-rules imports + ledger logging
+   - Enrich `ai_analysis` field only
+   - Test manually first
+
+4. **Pi 5 cron script** (~15 min)
+   - Create `~/scripts/fleeting-pipeline.sh` on Pi 5
+   - SSH into Mac, run the three scripts in sequence:
+     ```bash
+     ssh mac "cd /path/to/unshackled-pursuit && npx ts-node agents/folder-watcher.ts && npx ts-node agents/process-inbox.ts && npx ts-node agents/process-thoughts.ts"
+     ```
+   - Add to crontab: `*/5 * * * * ~/scripts/fleeting-pipeline.sh >> /tmp/fleeting-pipeline.log 2>&1`
+
+5. **Daily digest** (~20 min)
+   - Bash script on Pi 5 that curls Supabase directly (no SSH needed)
+   - Counts by status, lists new items since yesterday
+   - Output to terminal or file (Telegram integration later)
+   - Cron: `0 7 * * * ~/scripts/fleeting-digest.sh`
+
+**Items this solves across tiers:**
+| Checklist Item | Tier | How It's Solved |
+|---------------|------|----------------|
+| Schedule folder-watcher | T1 (blocked) | Pi 5 cron + SSH |
+| Schedule process-inbox | T1 | Same cron chain |
+| Install Ollama on Mac | T2 | brew install |
+| Convert process-thoughts to local | T2 | Ollama REST API |
+| Schedule enriched processing | T2 | Same cron chain |
+| SSH from Pi 5 to Mac | T3 | Prerequisite for everything |
+| Daily digest | T3 | Pi 5 cron + Supabase curl |
+
+**Items NOT solved (still separate work):**
+- Wake-on-LAN (needed if Mac sleeps — research if SSH over Tailscale auto-wakes)
+- Ollama on Pi 5 (lightweight triage — nice-to-have, not blocking)
+- Telegram bot (separate project, Pi 5 only)
+- PDF-to-Markdown automation (can add to pipeline later)
+
+**Pre-session research questions (run deep research agents in parallel):**
+1. Does SSH over Tailscale wake a sleeping Mac, or do we need WoL first?
+2. What's the best Ollama model for thought classification? (Llama 3.2 3B vs Phi-3 vs Qwen 2.5)
+3. Can Ollama run as a launchd service on Mac so it's always available?
+4. What's the Pi 5's Tailscale hostname? (check `tailscale status` on Pi 5)
+5. Is Mac Remote Login already enabled?
+
 ---
 
 *This checklist is version-controlled in the Unshackled Pursuit repo. Referenced from `FleetingThoughts/AGENTS.md`.*
