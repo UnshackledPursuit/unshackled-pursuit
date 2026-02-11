@@ -234,6 +234,7 @@ All paths relative to: `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Le
 When a routed thought is ready to graduate to a project checklist:
 
 ### Step 1: Add to Checklist
+- If a thought contains multiple distinct features or action items, **split it into separate thoughts first** (one per feature), then graduate each individually.
 - Add or update the item in the project's MASTER_CHECKLIST.md
 - Keep it to a **one-liner with priority** — the checklist stays lean
 - Reference the detail doc path if one is created (Step 2)
