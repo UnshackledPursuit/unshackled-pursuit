@@ -1,216 +1,180 @@
 #!/usr/bin/env npx ts-node
 
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-
-// Load .env.local from project root
-dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
-
 /**
  * Fleeting Thoughts Folder Watcher
  *
- * Watches an iCloud folder for new .md files and ingests them into Fleeting Thoughts.
+ * Watches the FleetingThoughts iCloud folder for new files (.md, .pdf, .txt)
+ * and ingests them into Supabase as inbox items.
  *
- * Setup:
- * 1. Set SUPABASE_SERVICE_KEY environment variable
- * 2. Create the inbox folder (default: ~/Library/Mobile Documents/com~apple~CloudDocs/FleetingInbox)
- * 3. Run: npx ts-node agents/folder-watcher.ts
+ * Respects pipeline rules:
+ * - Skips hub files (CLAUDE.md, AGENTS.md)
+ * - Handles PDFs and markdown
+ * - Moves ingested files to _processed/
+ * - Logs all actions to the Pipeline Ledger
+ * - Never graduates items (no-graduation guardrail)
  *
- * Or run via cron every 5 minutes:
- * (asterisk)/5 * * * * cd /path/to/unshackled-pursuit && npx ts-node agents/folder-watcher.ts
+ * Run manually:
+ *   npx ts-node --project agents/tsconfig.json agents/folder-watcher.ts
+ *
+ * Schedule via launchd: see docs/MASTER_CHECKLIST.md for plist template
  */
 
-import { createClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
+import * as path from 'path';
+import {
+  createSupabaseClient,
+  isIngestibleFile,
+  getContentType,
+  moveToProcessed,
+  appendToLedger,
+  matchProject,
+  getProjectName,
+  PATHS,
+  USER_ID,
+  LedgerEntry,
+} from './pipeline-rules';
 
-// Configuration
-const INBOX_FOLDER = process.env.FLEETING_INBOX_FOLDER ||
-  path.join(process.env.HOME || '', 'Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/FleetingThoughts');
-const PROCESSED_FOLDER = path.join(INBOX_FOLDER, '_processed');
-const USER_EMAIL = 'unshackledpursuit@gmail.com'; // Your email for user lookup
+const supabase = createSupabaseClient();
 
-// Initialize Supabase
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ygcgzwlzyrvwshtlxpsc.supabase.co';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-
-if (!supabaseServiceKey) {
-  console.error('Error: SUPABASE_SERVICE_KEY environment variable is required');
-  console.error('Get it from: Supabase Dashboard > Settings > API > service_role (secret)');
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// Extract title from markdown (first H1 or filename)
+// Extract title from markdown content or filename
 function extractTitle(content: string, filename: string): string {
   const h1Match = content.match(/^#\s+(.+)$/m);
-  if (h1Match) {
-    return h1Match[1].trim();
-  }
-  // Use filename without extension
-  return filename.replace(/\.md$/, '').replace(/[-_]/g, ' ');
+  if (h1Match) return h1Match[1].trim();
+  // Clean filename
+  const ext = path.extname(filename);
+  return path.basename(filename, ext).replace(/[-_]/g, ' ');
 }
 
-// Detect if content looks like a spec/PRD
+// Detect if content looks like a spec/PRD document
 function isSpec(content: string): boolean {
   const specIndicators = [
     /^##?\s*(overview|summary|background|requirements|acceptance criteria|user stor)/im,
     /^##?\s*(problem|solution|goal|objective)/im,
-    /^##?\s*(technical|implementation|design)/im,
+    /^##?\s*(technical|implementation|design|architecture)/im,
     /^\s*[-*]\s+\[[ x]\]/m, // Checkboxes
   ];
   return specIndicators.some(pattern => pattern.test(content));
 }
 
-// Known projects organized by type
-const KNOWN_PROJECTS = {
-  // Websites
-  'unshackled-pursuit': ['unshackled', 'unshackledpursuit', 'pursuit'],
-  'fleeting-thoughts': ['fleeting', 'fleetingthoughts'],
+// Read file content — for PDFs, record that it exists (content extraction is manual)
+function readFileContent(filepath: string): { content: string; readable: boolean } {
+  const ext = path.extname(filepath).toLowerCase();
 
-  // Apps
-  'waypointuub': ['waypoint', 'waypointuub'],
-  'ps5-remote': ['ps5', 'ps5remote', 'playstation'],
-  'framepilot': ['framepilot', 'frame'],
-  'aeon': ['aeon'],
-  'particles': ['particles'],
-};
-
-// Extract project name from content or filename
-function extractProjectHint(content: string, filename: string): string | null {
-  const lowerContent = content.toLowerCase();
-  const lowerFilename = filename.toLowerCase();
-
-  // Look for explicit project mentions in the content
-  const projectPatterns = [
-    /project:\s*(.+)/i,
-    /for\s+([\w-]+)\s+project/i,
-  ];
-
-  for (const pattern of projectPatterns) {
-    const match = content.match(pattern);
-    if (match) return match[1].trim();
+  if (ext === '.pdf') {
+    const filename = path.basename(filepath);
+    return {
+      content: `[PDF document: ${filename}] — Content extraction pending. Use Claude or Marker for PDF-to-markdown conversion.`,
+      readable: false,
+    };
   }
 
-  // Check against known projects
-  for (const [projectName, aliases] of Object.entries(KNOWN_PROJECTS)) {
-    for (const alias of aliases) {
-      if (lowerContent.includes(alias) || lowerFilename.includes(alias)) {
-        return projectName;
-      }
-    }
+  try {
+    return { content: fs.readFileSync(filepath, 'utf-8'), readable: true };
+  } catch {
+    return { content: `[Could not read file: ${path.basename(filepath)}]`, readable: false };
   }
-
-  return null;
 }
 
-async function getUserId(): Promise<string | null> {
-  const { data, error } = await supabase
-    .from('fleeting_thoughts')
-    .select('user_id')
-    .limit(1)
-    .single();
-
-  if (data) return data.user_id;
-
-  // Fallback: look up user by email (requires admin access)
-  const { data: userData } = await supabase.auth.admin.listUsers();
-  const user = userData?.users?.find(u => u.email === USER_EMAIL);
-  return user?.id || null;
-}
-
-async function ingestFile(filepath: string): Promise<boolean> {
+async function ingestFile(filepath: string): Promise<LedgerEntry | null> {
   const filename = path.basename(filepath);
-
-  // Skip non-markdown files
-  if (!filename.endsWith('.md')) {
-    return false;
-  }
-
-  // Skip hidden files and processed folder
-  if (filename.startsWith('.') || filename.startsWith('_')) {
-    return false;
-  }
+  const contentType = getContentType(filename);
 
   console.log(`📄 Processing: ${filename}`);
 
   try {
-    const content = fs.readFileSync(filepath, 'utf-8');
-    const title = extractTitle(content, filename);
-    const projectHint = extractProjectHint(content, filename);
-    const isSpecDoc = isSpec(content);
-
-    // Get user ID
-    const userId = await getUserId();
-    if (!userId) {
-      console.error('  ❌ Could not determine user ID');
-      return false;
-    }
+    const { content, readable } = readFileContent(filepath);
+    const title = readable ? extractTitle(content, filename) : path.basename(filename, path.extname(filename)).replace(/[-_]/g, ' ');
+    const projectMatch = matchProject(readable ? content : filename);
+    const isSpecDoc = readable && isSpec(content);
 
     // Build tags
     const tags: string[] = ['folder-import'];
     if (isSpecDoc) tags.push('spec');
-    if (projectHint) tags.push(projectHint.toLowerCase());
+    if (contentType === 'pdf') tags.push('pdf');
+
+    // Build summary for Supabase content field
+    const summary = readable
+      ? (content.length > 500 ? content.substring(0, 500) + '...' : content)
+      : `[PDF: ${filename}] — Awaiting content extraction.`;
+
+    // Build ai_analysis
+    const analysisparts: string[] = [];
+    if (readable) analysisparts.push(`Imported document: "${title}".`);
+    else analysisparts.push(`PDF file imported: "${title}". Content extraction pending.`);
+    if (isSpecDoc) analysisparts.push('Detected as spec/PRD document.');
+    if (projectMatch) analysisparts.push(`Keyword match → ${projectMatch.name}.`);
+    analysisparts.push(`Source: FleetingThoughts/${filename}`);
 
     // Insert into Supabase
     const { data, error } = await supabase
       .from('fleeting_thoughts')
       .insert({
-        content: content,
-        user_id: userId,
-        content_type: 'text',
+        content: summary,
+        user_id: USER_ID,
+        content_type: contentType,
         source: 'folder_watch',
         status: 'inbox',
         tags: tags,
-        ai_analysis: isSpecDoc
-          ? `Imported spec document: "${title}". ${projectHint ? `Likely for project: ${projectHint}.` : ''} Ready for review.`
-          : null,
+        project_id: projectMatch?.id || null,
+        ai_analysis: analysisparts.join(' '),
       })
       .select()
       .single();
 
     if (error) {
-      console.error(`  ❌ Error inserting: ${error.message}`);
-      return false;
+      console.error(`  ❌ Supabase insert error: ${error.message}`);
+      return null;
     }
 
     console.log(`  ✅ Added to inbox (ID: ${data.id.slice(0, 8)}...)`);
     console.log(`     Title: ${title}`);
-    if (projectHint) console.log(`     Project hint: ${projectHint}`);
-    if (isSpecDoc) console.log(`     Detected as: Spec document`);
+    if (projectMatch) console.log(`     Project: ${projectMatch.name}`);
+    if (isSpecDoc) console.log(`     Type: Spec document`);
 
-    // Move to processed folder
-    const processedPath = path.join(PROCESSED_FOLDER, `${Date.now()}-${filename}`);
-    fs.renameSync(filepath, processedPath);
-    console.log(`  📁 Moved to: _processed/`);
+    // Move to _processed/
+    const processedPath = moveToProcessed(filepath);
+    console.log(`  📁 Moved to: ${processedPath}`);
 
-    return true;
+    // Update routed_to with processed path
+    await supabase
+      .from('fleeting_thoughts')
+      .update({ routed_to: processedPath })
+      .eq('id', data.id);
+
+    return {
+      thoughtId: data.id,
+      summary: `${title} (${contentType})`,
+      action: 'created from file scan + moved-to-processed',
+      project: projectMatch?.name || 'none',
+      reasoning: projectMatch
+        ? `File in FleetingThoughts/ folder. Keyword match → ${projectMatch.name}.`
+        : 'File in FleetingThoughts/ folder. No project match — needs manual assignment.',
+      outcome: `Inbox. Source moved to ${processedPath}`,
+    };
   } catch (err) {
     console.error(`  ❌ Error: ${err}`);
-    return false;
+    return null;
   }
 }
 
 async function watchFolder() {
   console.log('🔍 Fleeting Thoughts Folder Watcher');
-  console.log('====================================\n');
-  console.log(`📂 Watching: ${INBOX_FOLDER}`);
-  console.log(`📦 Processed: ${PROCESSED_FOLDER}\n`);
+  console.log('====================================');
+  console.log(`📂 Watching: ${PATHS.FLEETING_THOUGHTS}`);
+  console.log(`📦 Processed: ${PATHS.PROCESSED}\n`);
 
   // Ensure folders exist
-  if (!fs.existsSync(INBOX_FOLDER)) {
-    console.log(`Creating inbox folder: ${INBOX_FOLDER}`);
-    fs.mkdirSync(INBOX_FOLDER, { recursive: true });
+  if (!fs.existsSync(PATHS.FLEETING_THOUGHTS)) {
+    console.log(`Creating folder: ${PATHS.FLEETING_THOUGHTS}`);
+    fs.mkdirSync(PATHS.FLEETING_THOUGHTS, { recursive: true });
   }
 
-  if (!fs.existsSync(PROCESSED_FOLDER)) {
-    fs.mkdirSync(PROCESSED_FOLDER, { recursive: true });
+  if (!fs.existsSync(PATHS.PROCESSED)) {
+    fs.mkdirSync(PATHS.PROCESSED, { recursive: true });
   }
 
-  // Get all .md files in inbox
-  const files = fs.readdirSync(INBOX_FOLDER).filter(f =>
-    f.endsWith('.md') && !f.startsWith('.') && !f.startsWith('_')
-  );
+  // Get all ingestible files
+  const files = fs.readdirSync(PATHS.FLEETING_THOUGHTS).filter(isIngestibleFile);
 
   if (files.length === 0) {
     console.log('✅ No new files to process.\n');
@@ -219,16 +183,24 @@ async function watchFolder() {
 
   console.log(`Found ${files.length} file(s) to process:\n`);
 
+  const ledgerEntries: LedgerEntry[] = [];
   let processed = 0;
   let failed = 0;
 
   for (const file of files) {
-    const filepath = path.join(INBOX_FOLDER, file);
-    const success = await ingestFile(filepath);
-    if (success) processed++;
-    else failed++;
+    const filepath = path.join(PATHS.FLEETING_THOUGHTS, file);
+    const entry = await ingestFile(filepath);
+    if (entry) {
+      ledgerEntries.push(entry);
+      processed++;
+    } else {
+      failed++;
+    }
     console.log('');
   }
+
+  // Log to Pipeline Ledger
+  appendToLedger('folder-watcher', ledgerEntries);
 
   console.log('====================================');
   console.log(`📊 Summary: ${processed} processed, ${failed} failed`);

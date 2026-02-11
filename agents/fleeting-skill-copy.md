@@ -212,6 +212,7 @@ Archived (fully consumed, reference only)
 | Website Code | `Websites/DKRHUB/unshackled-pursuit/` |
 | Agent Scripts | `Websites/DKRHUB/unshackled-pursuit/agents/` |
 | Pipeline Ledger | `Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md` |
+| Master Checklist | `Websites/DKRHUB/unshackled-pursuit/docs/MASTER_CHECKLIST.md` |
 | Skill Backup | `Websites/DKRHUB/unshackled-pursuit/agents/fleeting-skill-copy.md` |
 | Output Folder | `Construct/Ideas/` |
 | Conductor | `Construct/CONDUCTOR.md` |

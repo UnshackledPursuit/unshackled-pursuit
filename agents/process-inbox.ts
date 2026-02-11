@@ -3,15 +3,30 @@
 /**
  * Fleeting Thoughts Inbox Processor
  *
- * This script processes unprocessed inbox items using AI analysis.
- * Run with: npx ts-node agents/process-inbox.ts
+ * Processes unprocessed inbox items using keyword-based categorization.
+ * No AI cost — purely keyword matching for priority, tags, destination, and project.
  *
- * Required environment variables:
- * - SUPABASE_URL
- * - SUPABASE_SERVICE_KEY (service_role key, not anon key)
+ * Respects pipeline rules:
+ * - Uses shared pipeline-rules module for project matching
+ * - Validates status transitions (no-graduation guardrail)
+ * - Logs all actions to the Pipeline Ledger
+ * - Never creates SPEC files, project folders, or modifies checklists
+ *
+ * Run manually:
+ *   npx ts-node --project agents/tsconfig.json agents/process-inbox.ts
+ *
+ * Schedule via Vercel cron or launchd: see docs/MASTER_CHECKLIST.md
  */
 
-import { createClient } from '@supabase/supabase-js';
+import {
+  createSupabaseClient,
+  validateStatusTransition,
+  appendToLedger,
+  matchProject,
+  getProjectName,
+  PROJECT_IDS,
+  LedgerEntry,
+} from './pipeline-rules';
 
 // Types
 interface Thought {
@@ -33,12 +48,6 @@ interface Thought {
   url: string | null;
 }
 
-interface Project {
-  id: string;
-  name: string;
-  description: string | null;
-}
-
 interface ProcessingResult {
   id: string;
   content: string;
@@ -48,61 +57,52 @@ interface ProcessingResult {
   suggested_destination: 'things' | 'reminders' | 'calendar' | 'notes' | 'reference' | 'archive';
   ai_analysis: string;
   project_id: string | null;
+  project_name: string;
   new_status: 'processing' | 'routed';
 }
 
-// Initialize Supabase client with service role key
-const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing required environment variables:');
-  console.error('- SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL)');
-  console.error('- SUPABASE_SERVICE_KEY');
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createSupabaseClient();
 
 // Keywords for categorization
 const PRIORITY_KEYWORDS = {
-  high: ['urgent', 'asap', 'critical', 'blocking', 'important', 'today', 'now'],
+  high: ['urgent', 'asap', 'critical', 'blocking', 'important', 'today', 'now', 'ship'],
   medium: ['should', 'need', 'want', 'soon', 'this week'],
   low: ['maybe', 'could', 'nice to have', 'eventually'],
-  someday: ['someday', 'maybe', 'idea', 'future', 'one day'],
+  someday: ['someday', 'maybe later', 'idea', 'future', 'one day'],
 };
 
 const DESTINATION_KEYWORDS = {
-  things: ['task', 'todo', 'do', 'action', 'implement', 'fix', 'build', 'create'],
-  reminders: ['remind', 'remember', 'don\'t forget', 'appointment', 'meeting'],
+  things: ['task', 'todo', 'do', 'action', 'implement', 'fix', 'build', 'create', 'add', 'update'],
+  reminders: ['remind', 'remember', "don't forget", 'appointment', 'meeting'],
   calendar: ['schedule', 'event', 'meeting', 'call', 'date', 'time'],
   notes: ['note', 'document', 'write up', 'spec', 'design'],
-  reference: ['reference', 'resource', 'link', 'article', 'bookmark'],
-  archive: ['done', 'completed', 'finished', 'resolved'],
+  reference: ['reference', 'resource', 'link', 'article', 'bookmark', 'check out'],
+  archive: ['done', 'completed', 'finished', 'resolved', 'test'],
 };
 
 const TAG_KEYWORDS = {
   feature: ['feature', 'enhancement', 'improvement', 'add'],
-  bug: ['bug', 'fix', 'broken', 'issue', 'error'],
-  idea: ['idea', 'thought', 'concept', 'brainstorm'],
-  research: ['research', 'investigate', 'learn', 'study', 'explore'],
-  personal: ['personal', 'home', 'family', 'life'],
-  work: ['work', 'job', 'project', 'client'],
+  bug: ['bug', 'fix', 'broken', 'issue', 'error', "can't", 'crash'],
+  idea: ['idea', 'thought', 'concept', 'brainstorm', 'what if'],
+  research: ['research', 'investigate', 'learn', 'study', 'explore', 'check out'],
+  feedback: ['feedback', 'user said', 'suggestion'],
+  infrastructure: ['pipeline', 'automation', 'infrastructure', 'server', 'deploy'],
+  spec: ['spec', 'architecture', 'design doc', 'roadmap'],
 };
 
-function analyzeThought(thought: Thought, projects: Project[]): ProcessingResult {
+function analyzeThought(thought: Thought): ProcessingResult {
   const content = thought.content.toLowerCase();
 
   // Determine if actionable
-  const actionablePatterns = ['need to', 'should', 'must', 'have to', 'want to', 'going to', 'will', 'todo', 'task'];
+  const actionablePatterns = ['need to', 'should', 'must', 'have to', 'want to', 'going to', 'will', 'todo', 'task', 'fix', 'build', 'add', 'implement'];
   const isActionable = actionablePatterns.some(p => content.includes(p)) ||
-    Object.values(DESTINATION_KEYWORDS.things).some(k => content.includes(k));
+    DESTINATION_KEYWORDS.things.some(k => content.includes(k));
 
   // Determine priority
   let priority: 'high' | 'medium' | 'low' | 'someday' = 'medium';
   for (const [level, keywords] of Object.entries(PRIORITY_KEYWORDS)) {
     if (keywords.some(k => content.includes(k))) {
-      priority = level as 'high' | 'medium' | 'low' | 'someday';
+      priority = level as typeof priority;
       break;
     }
   }
@@ -127,40 +127,26 @@ function analyzeThought(thought: Thought, projects: Project[]): ProcessingResult
   }
 
   // Extract tags
-  const tags: string[] = [];
+  const tags: string[] = thought.tags ? [...thought.tags] : [];
   for (const [tag, keywords] of Object.entries(TAG_KEYWORDS)) {
-    if (keywords.some(k => content.includes(k))) {
+    if (keywords.some(k => content.includes(k)) && !tags.includes(tag)) {
       tags.push(tag);
     }
   }
 
-  // Match to project
-  let projectId: string | null = null;
-  for (const project of projects) {
-    const projectName = project.name.toLowerCase();
-    const projectDesc = (project.description || '').toLowerCase();
-    if (content.includes(projectName) || (projectDesc && content.includes(projectDesc))) {
-      projectId = project.id;
-      break;
-    }
-  }
+  // Match to project using shared pipeline-rules
+  const projectMatch = matchProject(thought.content);
+  const projectId = thought.project_id || projectMatch?.id || null;
+  const projectName = projectMatch?.name || getProjectName(projectId);
 
-  // Generate AI analysis
-  const actionText = isActionable ? 'This is actionable' : 'This is informational/reference';
-  const destText = `Routing to ${destination}`;
-  let nextAction = 'No immediate action required';
-  if (isActionable) {
-    const destStr = destination as string;
-    if (destStr === 'things') {
-      nextAction = 'Next action: Review and create task';
-    } else if (destStr === 'reminders') {
-      nextAction = 'Next action: Review and set reminder';
-    } else {
-      nextAction = 'Next action: Review and process';
-    }
-  }
+  // Generate analysis summary
+  const actionText = isActionable ? 'Actionable' : 'Informational/reference';
+  const destText = `→ ${destination}`;
+  const projectText = projectName !== 'none' ? ` [${projectName}]` : '';
+  const aiAnalysis = `${actionText}. ${destText}.${projectText} Auto-categorized by keyword matching.`;
 
-  const aiAnalysis = `${actionText}. ${destText}. ${nextAction}.`;
+  // Determine new status (respecting guardrails)
+  const newStatus = isActionable ? 'routed' : 'processing';
 
   return {
     id: thought.id,
@@ -171,7 +157,8 @@ function analyzeThought(thought: Thought, projects: Project[]): ProcessingResult
     suggested_destination: destination,
     ai_analysis: aiAnalysis,
     project_id: projectId,
-    new_status: isActionable ? 'routed' : 'processing',
+    project_name: projectName,
+    new_status: newStatus,
   };
 }
 
@@ -200,14 +187,7 @@ async function processInbox() {
 
   console.log(`Found ${thoughts.length} unprocessed item(s)\n`);
 
-  // Fetch projects for context
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('status', 'active');
-
-  // Process each thought
-  const results: ProcessingResult[] = [];
+  const ledgerEntries: LedgerEntry[] = [];
   const summary = {
     total: thoughts.length,
     actionable: 0,
@@ -216,12 +196,18 @@ async function processInbox() {
   };
 
   for (const thought of thoughts) {
-    console.log(`\n📝 Processing: "${thought.content.substring(0, 50)}${thought.content.length > 50 ? '...' : ''}"`);
+    const preview = thought.content.substring(0, 50) + (thought.content.length > 50 ? '...' : '');
+    console.log(`\n📝 Processing: "${preview}"`);
 
-    const result = analyzeThought(thought, projects || []);
-    results.push(result);
+    const result = analyzeThought(thought);
 
-    // Update summary
+    // Validate status transition
+    if (!validateStatusTransition(thought.status, result.new_status)) {
+      console.error(`  ⚠️ Skipping — invalid transition`);
+      continue;
+    }
+
+    // Update summary stats
     if (result.is_actionable) summary.actionable++;
     summary.byDestination[result.suggested_destination] = (summary.byDestination[result.suggested_destination] || 0) + 1;
     summary.byPriority[result.priority] = (summary.byPriority[result.priority] || 0) + 1;
@@ -244,12 +230,24 @@ async function processInbox() {
     if (updateError) {
       console.error(`  ❌ Error updating: ${updateError.message}`);
     } else {
-      console.log(`  ✅ ${result.is_actionable ? 'Actionable' : 'Reference'} | ${result.priority} priority | → ${result.suggested_destination}`);
+      console.log(`  ✅ ${result.is_actionable ? 'Actionable' : 'Reference'} | ${result.priority} | → ${result.suggested_destination} | ${result.project_name}`);
       if (result.tags.length > 0) {
         console.log(`     Tags: ${result.tags.join(', ')}`);
       }
+
+      ledgerEntries.push({
+        thoughtId: thought.id,
+        summary: preview,
+        action: 'categorized',
+        project: result.project_name,
+        reasoning: `Keyword match. ${result.is_actionable ? 'Actionable' : 'Reference'}. Priority: ${result.priority}. Destination: ${result.suggested_destination}.`,
+        outcome: `Status: ${result.new_status}. Project: ${result.project_name}.`,
+      });
     }
   }
+
+  // Log to Pipeline Ledger
+  appendToLedger('process-inbox', ledgerEntries);
 
   // Print summary
   console.log('\n====================================');

@@ -47,6 +47,7 @@ Capture (Website/API) → Store (Supabase) → Triage (Claude CLI or Local)
 | `agents/process-thoughts.ts` | AI analysis (needs API key, prefer CLI) |
 | `agents/fleeting-skill-copy.md` | Backup of /fleeting skill (keep in sync with `~/.claude/skills/fleeting/SKILL.md`) |
 | `docs/PIPELINE_LEDGER.md` | Routing decision log — tracks all pipeline actions for study/learning |
+| `docs/MASTER_CHECKLIST.md` | Pipeline automation checklist — single source of truth for buildout |
 | `docs/PIPELINE_ANALYSIS.md` | Gap analysis |
 | `docs/FLEETING_FUTURE_FEATURES.md` | Feature roadmap |
 
