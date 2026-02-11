@@ -119,6 +119,17 @@ Each session that processes thoughts appends entries to the table below. Entries
 
 **Session complete.** All actions resolved. Pipeline clean: 0 inbox, 1 processing, 10 routed, 26 done, 13 archived.
 
+### Session: 2026-02-11 — Tier 1 Automation + Graduation Workflow
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-02-11 | `7f62bf93` | Apple Ecosystem 2026 Strategy | split → done | Cross-project | Consolidated reference with time-sensitive deadlines. Split into project-specific children for proper routing. | Split into: `d44206d5` (WaypointHub), `6c7d5ac9` (Spatialis), `d877b3f7` (cross-project reference). Original done. |
+| 2026-02-11 | `d44206d5` | Apple Ecosystem — WaypointHub Actions | split-child | WaypointHub | App Intents (Feb 23 deadline), Liquid Glass (Apr 28), Foundation Models, Universal Links. | Routed. Ready for graduation to Waypoint/MASTER_CHECKLIST.md. |
+| 2026-02-11 | `6c7d5ac9` | Apple Ecosystem — Spatialis Actions | split-child | Spatialis | App Intents (Feb 23 deadline), Liquid Glass (Apr 28), Foundation Models. Check FUT-52 overlap. | Routed. Ready for graduation to Spatialis checklist. |
+| 2026-02-11 | `d877b3f7` | Apple Ecosystem — Framework Reference | split-child | Construct Ideas | Cross-project framework reference (Foundation Models, Liquid Glass, etc.). Not actionable. | Routed as reference. |
+| 2026-02-11 | — | Graduation workflow documented | infrastructure | Fleeting Thoughts | Established standard pattern: checklist one-liner + feature detail doc + archive thought. | Fleeting skill updated with full graduation workflow, feature doc folder convention. |
+| 2026-02-11 | — | Pipeline automation Tier 1 committed | infrastructure | Fleeting Thoughts | pipeline-rules.ts, rewritten scripts, MASTER_CHECKLIST.md. Branch: feat/pipeline-automation-tier1. | Committed (322b0f8). launchd blocked by iCloud Full Disk Access — pending. |
+
 ---
 
 ## Observations & Learning Notes

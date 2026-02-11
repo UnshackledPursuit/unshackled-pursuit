@@ -1,9 +1,3 @@
-# Fleeting Skill — Reference Copy
-
-> **THIS IS A BACKUP COPY.** The live skill is at `~/.claude/skills/fleeting/SKILL.md`.
-> When either copy is updated, the other should be synced to match.
-> Last synced: 2026-02-10
-
 ---
 name: fleeting
 description: Review and process the fleeting thoughts pipeline. Use when asked about fleeting thoughts, the capture pipeline, or autonomous infrastructure.
@@ -93,6 +87,8 @@ Every processing action MUST be logged to the ledger. This serves two purposes:
 **Always log:** status changes, project assignments, file moves, merges, splits, deletions, graduations to checklists.
 
 The ledger is version-controlled in the Unshackled Pursuit repo and should be committed after each processing session.
+
+**Future automation note:** When automated scripts (`process-inbox.ts`, `process-thoughts.ts`, or any future cron/scheduled jobs) are wired up to run without the `/fleeting` skill context, they MUST have ledger logging built into the script itself. The skill enforces logging for agent sessions, but scripts running independently will bypass the skill. Wire ledger append logic directly into any script that modifies Supabase data.
 
 ---
 
@@ -231,10 +227,57 @@ All paths relative to: `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Le
 
 **Fleeting Thoughts pipeline tasks** are tracked in the Pipeline Ledger, not a separate checklist.
 
-When graduating thoughts:
-1. Consolidate routed items into the relevant project's MASTER_CHECKLIST.md
-2. Mark "done" in Supabase with `routed_to` referencing the checklist
-3. Log the graduation in the Pipeline Ledger
+---
+
+## Graduation Workflow (Thought → Checklist → Feature Doc)
+
+When a routed thought is ready to graduate to a project checklist:
+
+### Step 1: Add to Checklist
+- Add or update the item in the project's MASTER_CHECKLIST.md
+- Keep it to a **one-liner with priority** — the checklist stays lean
+- Reference the detail doc path if one is created (Step 2)
+
+### Step 2: Extract Feature Detail Doc (if rich content)
+Not every thought needs a doc. But if the thought contains:
+- Multiple approaches/angles worth preserving
+- Architectural detail or specs
+- Implementation notes that would bloat the checklist
+
+Then extract to the project's **feature doc folder**:
+- **Version-scoped** (tied to a specific release): `{project}/Features/v{X}/FEATURE_NAME.md`
+- **Version-agnostic** (not yet assigned to a release): `{project}/Features/FEATURE_NAME.md`
+
+Once a version-agnostic feature gets pulled into a release, move it into that version's folder.
+
+Checklist item should reference the doc:
+```
+| FUT-XX | Feature Name | HIGH v1.2 | See Features/FEATURE_NAME.md |
+```
+
+### Step 3: Archive the Thought
+- PATCH status to `archived` in Supabase
+- Update `routed_to` to reference the final doc location
+- The value has been extracted — the thought is consumed
+
+### Step 4: Log in Pipeline Ledger
+- Action: `graduated`
+- Outcome: checklist item ID + doc path (if created)
+- Reasoning: why this routing was chosen
+
+### Key Principle: Preserve Distinct Angles
+Different thoughts about the same feature may capture **different angles or approaches**. Before archiving, compare the thought content against existing checklist items. If the thought adds a unique perspective (different implementation approach, different use case, different scope), preserve that angle — either as notes in the feature detail doc or as a separate checklist item. Don't deduplicate ideas that look similar but are actually distinct approaches. When the feature is eventually built, having multiple angles documented means options can be evaluated.
+
+### Feature Doc Folder Convention by Project
+
+| Project | Feature Docs Location |
+|---------|----------------------|
+| Spatialis | `Construct/Ideas/Sigil/Features/` |
+| Spatialis (versioned) | `Construct/Ideas/Sigil/Features/v{X}/` |
+| WaypointHub | `Waypoint/Features/` (create when needed) |
+| Other projects | `{project_root}/Features/` |
+
+**Note:** Some projects may use existing folder conventions (e.g., Spatialis has `Apple Communication/` for App Store docs). Feature docs are separate — they capture design intent and implementation options, not App Store content.
 
 ---
 
