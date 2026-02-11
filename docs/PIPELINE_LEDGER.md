@@ -130,6 +130,32 @@ Each session that processes thoughts appends entries to the table below. Entries
 | 2026-02-11 | — | Graduation workflow documented | infrastructure | Fleeting Thoughts | Established standard pattern: checklist one-liner + feature detail doc + archive thought. | Fleeting skill updated with full graduation workflow, feature doc folder convention. |
 | 2026-02-11 | — | Pipeline automation Tier 1 committed | infrastructure | Fleeting Thoughts | pipeline-rules.ts, rewritten scripts, MASTER_CHECKLIST.md. Branch: feat/pipeline-automation-tier1. | Committed (322b0f8). launchd blocked by iCloud Full Disk Access — pending. |
 
+### Session: 2026-02-11 — Spatialis Graduation Execution
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-02-11 | `69e84c22` | Spatialis Multi-Mode Architecture Spec | graduated → archived | Spatialis | 15-page spec (Gallery/Canvas/Studio). Extracted to feature doc. Checklist FUT-14 and FUT-44 updated with doc references. | `Features/v2.0/MULTI_MODE_ARCHITECTURE.md` created. v2.0 north star doc. |
+| 2026-02-11 | `e8726bfd` | v1.1 Future Vision (depth panes, gallery, multi-project) | graduated → archived | Spatialis | Contained 3 unique angles not on checklist: per-pane export, multi-project display, depth-as-organization. Extracted to 2 feature docs. | `Features/GALLERY_SHOWCASE.md` + `Features/DEPTH_PANES.md` created. FUT-44 and FUT-10 context updated. |
+| 2026-02-11 | `6c7d5ac9` | Apple Ecosystem — Spatialis Actions (split-child) | graduated → archived | Spatialis | App Intents (Feb 23 deadline), Liquid Glass (Apr 28), Foundation Models. FUT-52 already tracked App Intents — added timing note. | FUT-52 context in MASTER_CHECKLIST.md updated with Feb 23/Apr 28 deadlines. |
+| 2026-02-11 | `7b7de695` | Launch/production push | archived | Spatialis | All items done — rename, website, App Store submission (Feb 8). No remaining value to extract. | Archived directly. Fully consumed. |
+| 2026-02-11 | `6f0a62c3` | Loading UI + Branding | archived | Spatialis | Branding done. Only unextracted idea was "bookmark loading screen" — user doesn't remember it. Dropped. | Archived directly. Fully consumed. |
+| 2026-02-11 | — | Features/ folder convention established | infrastructure | Spatialis | Created `Features/` and `Features/v2.0/` folders. Updated AGENTS.md with Feature Documentation section and doc index. | New graduation workflow applied successfully to 5 thoughts. |
+
+### Session: 2026-02-11 — Inbox Processing + Baoding Docs
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-02-11 | `f9f904af` | Cyclops app — laser eyes VR game | categorized + routed | Construct Ideas | New app idea. Gaze-based laser game for Vision Pro. Needs SPEC.md. | Routed to Construct Ideas incubator. Medium priority. |
+| 2026-02-11 | `be594fd5` | Spatialis 1.1 — onboarding, Dali, shapes | categorized + routed | Spatialis | Feature bundle for v1.1: simple onboarding, Salvador Dali feature, basic shapes (rect/circle/diamond). References phone screenshot notes. PRODUCTION APP. | Routed. Not graduated — active Spatialis agent handles. |
+| 2026-02-11 | `4edd4b7f` | Spatialis — USDZ/image import for free tier | categorized + routed | Spatialis | Free tier strategy: let users import USDZ/images to experience power before paying. No export in free tier. PRODUCTION APP. | Routed. Not graduated — active Spatialis agent handles. |
+| 2026-02-11 | `22da41ce` | WaypointHub — new freemium model with paid iCloud sync | categorized + routed | WaypointHub | Business model pivot: free features + paid iCloud sync tier. Strategic direction change. | Routed. Ready for graduation to Waypoint/MASTER_CHECKLIST.md. |
+| 2026-02-11 | `5650ad41` | App videos + Spatialis USDZ import demo | categorized + routed | Spatialis | Two items: marketing videos for all apps + import engineering USDZ into Spatialis for demo workflow. PRODUCTION APP. | Routed. Not graduated — active Spatialis agent handles. |
+| 2026-02-11 | — (file) | MATERIAL_DEV_PLAN.md — Baoding materials spec | moved to project | Construct Ideas (Baoding) | 449-line material development plan. Jade + amethyst ShaderGraph specs, constellation texture, RCP walkthrough, color palettes. Active working doc. | Moved from FleetingThoughts/ to Construct/Ideas/Baoding/. |
+| 2026-02-11 | — (file) | DELIGHT_INTERACTIONS.md — Baoding delight features | moved to project | Construct Ideas (Baoding) | 557-line delight interactions guide. 10 features + SpatialAudioManager code + WWDC refs. Active working doc. | Moved from FleetingThoughts/ to Construct/Ideas/Baoding/. |
+| 2026-02-11 | — (file) | MATERIAL_DEV_PLAN 2.md — duplicate | deleted | — | Identical duplicate of MATERIAL_DEV_PLAN.md (same size, same timestamp). | Deleted. |
+| 2026-02-11 | — | Baoding MASTER_CHECKLIST.md created | infrastructure | Construct Ideas (Baoding) | 65 tracked items + 6 future items. Synthesized from SPEC, AGENTS, MATERIAL_DEV_PLAN, DELIGHT_INTERACTIONS, and Ralph's PROGRESS.md. | Construct/Ideas/Baoding/MASTER_CHECKLIST.md created. |
+| 2026-02-11 | — | Spatialis status: LIVE on App Store | status update | Spatialis | User confirmed Spatialis is now live production. All routing marked handle-with-care. | Production status noted. |
+
 ---
 
 ## Observations & Learning Notes
