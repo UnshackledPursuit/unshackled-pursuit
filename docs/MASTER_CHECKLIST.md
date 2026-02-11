@@ -35,21 +35,107 @@
 
 ### What Exists But Doesn't Run Automatically
 
-| Script | Location | What It Does | Issues |
+| Script | Location | What It Does | Status |
 |--------|----------|-------------|--------|
-| `folder-watcher.ts` | `agents/` | Ingests .md files from iCloud folder → Supabase | Only handles .md (not PDF), would process CLAUDE.md/AGENTS.md, outdated project aliases, no ledger logging |
-| `process-inbox.ts` | `agents/` | Keyword-based categorization of inbox items | No ledger logging, no dotenv import, no _processed/ awareness |
-| `process-thoughts.ts` | `agents/` | AI analysis + SPEC.md generation | Uses Anthropic API (costs $), creates project folders (violates no-graduation rule), no ledger logging |
+| `folder-watcher.ts` | `agents/` | Ingests .md/.pdf/.txt from iCloud folder → Supabase | **Rewritten** (Tier 1). Works manually. launchd blocked by iCloud permission. |
+| `process-inbox.ts` | `agents/` | Keyword-based categorization of inbox items | **Rewritten** (Tier 1). Works manually. No scheduler yet. |
+| `process-thoughts.ts` | `agents/` | AI analysis + SPEC.md generation | **Unchanged.** Uses Anthropic API (costs $), violates no-graduation rule. Tier 2 conversion needed. |
+| `pipeline-rules.ts` | `agents/` | Shared module: guardrails, constants, utilities | **Created** (Tier 1). All scripts import from here. |
+
+### Compiled Versions (for launchd)
+
+| File | Location | Purpose |
+|------|----------|---------|
+| `folder-watcher.js` | `~/bin/fleeting-watcher/` | Compiled JS — runs without ts-node |
+| `pipeline-rules.js` | `~/bin/fleeting-watcher/` | Compiled JS — patched with absolute paths |
+| `folder-watcher.sh` | `~/bin/fleeting-watcher/` | Bash version — alternative that avoids node entirely |
+| `.env.local` | `~/bin/fleeting-watcher/` | Local copy of Supabase creds (keep in sync with project) |
+| `run-folder-watcher.sh` | `~/bin/` | Wrapper script called by launchd plist |
+| `com.fleeting.folder-watcher.plist` | `~/Library/LaunchAgents/` | launchd agent (currently unloaded) |
 
 ### What Doesn't Exist Yet
 
-- No automated processing (thoughts sit in inbox until `/fleeting` runs)
+- No automated processing (scripts work manually, launchd blocked by permission)
 - No local AI models installed (Ollama, MLX)
 - No Telegram bot
 - No SSH remote execution pipeline
 - No Wake-on-LAN
 - No daily digest
-- No shared pipeline-rules module for script consistency
+
+---
+
+## launchd + iCloud Troubleshooting (CRITICAL — Read Before Attempting)
+
+> **Status:** UNRESOLVED. The folder watcher works perfectly when run manually. Automating it via launchd is blocked by macOS iCloud Drive permissions.
+
+### The Problem
+
+macOS requires explicit permission for processes to access iCloud Drive (`~/Library/Mobile Documents/`). Interactive terminal sessions inherit Terminal.app's permissions. launchd-spawned processes do NOT — they need **Full Disk Access** granted to the specific binary.
+
+### What Was Tried (Feb 10-11, 2026)
+
+| Attempt | Approach | Result |
+|---------|----------|--------|
+| 1 | `npx ts-node` directly in plist | `EPERM: uv_cwd` — npx calls `process.cwd()` during init, fails before script runs |
+| 2 | Shell wrapper with `cd` before npx | Same `uv_cwd` — npx internal init still calls cwd |
+| 3 | Shell wrapper at `~/bin/` (non-iCloud path) | Same — npx fails regardless of wrapper location |
+| 4 | `node -r ts-node/register` (skip npx) | `EPERM: uv_cwd` — node's preload module phase calls cwd |
+| 5 | plist `WorkingDirectory` set to `~/` + absolute paths | `EPERM: open` on `node_modules/ts-node/register/index.js` — node can't read iCloud |
+| 6 | Compiled JS in `~/bin/fleeting-watcher/` (local node_modules) | `EPERM: open` on `.env.local` at iCloud path — ANY iCloud file read fails |
+| 7 | Local `.env.local` copy + compiled JS | Works past init, but `EPERM: scandir` on FleetingThoughts/ — node can't list iCloud dir |
+| 8 | Pure bash script (no node at all) | Same `Operation not permitted` on `ls` of iCloud dir — bash from launchd also blocked |
+| 9 | User granted node "Files and Folders" permission interactively | Only applies to interactive sessions, NOT launchd context |
+| 10 | User added node to Full Disk Access | **NOT TESTED** — UI issues prevented confirming. Node may already have FDA. |
+
+### Root Cause
+
+launchd processes run outside any app sandbox. macOS TCC (Transparency, Consent, and Control) blocks access to iCloud Drive for processes without Full Disk Access. The interactive permission grant (the popup you see in Terminal) does NOT carry over to launchd-spawned processes.
+
+### Approaches to Research Next Session
+
+**Option A: Verify Full Disk Access (Quick Check)**
+- User may have already added `/opt/homebrew/opt/node@20/bin/node` to Full Disk Access
+- If so, just reload the plist with the node/compiled-JS approach (attempt 7) and test
+- The compiled JS at `~/bin/fleeting-watcher/folder-watcher.js` with local `.env.local` should work
+- Test: `launchctl load ~/Library/LaunchAgents/com.fleeting.folder-watcher.plist`, drop a file, check `/tmp/fleeting-folder-watcher.log`
+
+**Option B: Local Watch Folder (Avoids iCloud Entirely)**
+- Create `~/FleetingThoughts/` as the launchd watch target (local, no permissions needed)
+- Change plist WatchPaths to `~/FleetingThoughts/`
+- Script reads from `~/FleetingThoughts/`, moves to `~/FleetingThoughts/_processed/`
+- User drops files there directly (or an Apple Shortcut copies from iCloud → local)
+- Trade-off: loses the "drop in iCloud from any device" simplicity
+
+**Option C: macOS Folder Actions (Automator/Shortcuts)**
+- macOS Folder Actions run within Finder's context (which already has FDA)
+- Create an Automator "Folder Action" on the iCloud FleetingThoughts folder
+- The action runs our bash script or a curl command
+- Trade-off: Automator is fragile, harder to debug, no good logging
+
+**Option D: Vercel Cron Instead of launchd**
+- Skip local file watching entirely
+- Folder watcher becomes a Vercel serverless function triggered by cron
+- But: Vercel can't access the local iCloud filesystem
+- Would need: Shortcut that uploads file content to `/api/capture` instead of dropping in folder
+- Trade-off: changes the user workflow (no more drag-and-drop files)
+
+**Option E: fsevents/fswatch with Different Permission Model**
+- Research whether `fswatch` or native FSEvents API has different TCC behavior
+- May still need FDA — needs testing
+
+**Option F: Swift Helper App**
+- Build a tiny Swift app that watches the folder and runs the script
+- An actual .app can request and receive FDA through the normal macOS permission flow
+- Most "proper" macOS solution but highest effort
+- Trade-off: maintaining another binary
+
+### Recommendation for Next Agent
+
+Start with **Option A** — just verify if FDA is already granted. If it works, done. If not, research **Options B and F** in parallel:
+- Option B is the fastest fallback (30 min to implement)
+- Option F is the cleanest long-term solution (might be worth it since we're building apps anyway)
+
+Do NOT spend time retrying the same launchd approaches listed above. They all fail for the same root cause (TCC/FDA). The only variables are: does the binary have FDA, or can we avoid iCloud in the launchd path entirely.
 
 ---
 
@@ -98,35 +184,19 @@ This ensures the skill and scripts follow the same rules.
 
 > **Goal:** Pipeline does basic work when you're away. You review results, not raw inbox.
 
-- [ ] **Create shared `pipeline-rules.ts` module**
-  - Ledger append function (writes to `docs/PIPELINE_LEDGER.md`)
-  - Hub file exclusion list (`CLAUDE.md`, `AGENTS.md`)
-  - Project ID constants matching Supabase
-  - `_processed/` move function
-  - Status transition validation
-  - No-graduation guardrail
+- [x] **Create shared `pipeline-rules.ts` module** *(done 2026-02-11)*
+  - Ledger append, hub file exclusion, project IDs, `_processed/` move, status validation, no-graduation guardrail
 
-- [ ] **Fix and update `folder-watcher.ts`**
-  - Add PDF file support (not just .md)
-  - Exclude hub files (CLAUDE.md, AGENTS.md)
-  - Replace hardcoded project aliases with Supabase project IDs
-  - Import shared pipeline-rules module
-  - Add ledger logging for every ingestion
-  - Fix file naming in `_processed/` (clean names, not timestamp prefix)
-  - Add dotenv loading for .env.local
+- [x] **Fix and update `folder-watcher.ts`** *(done 2026-02-11)*
+  - PDF support, hub file exclusion, pipeline-rules imports, ledger logging, clean file naming, dotenv
 
-- [ ] **Fix and update `process-inbox.ts`**
-  - Import shared pipeline-rules module
-  - Add ledger logging for every categorization
-  - Add dotenv loading for .env.local
-  - Update project matching to use Supabase project IDs
-  - Ensure no-graduation guardrail (already doesn't graduate, but make explicit)
+- [x] **Fix and update `process-inbox.ts`** *(done 2026-02-11)*
+  - pipeline-rules imports, ledger logging, dotenv, project matching, status validation
 
-- [ ] **Schedule `folder-watcher.ts` via launchd**
-  - Create `com.fleeting.folder-watcher.plist` in `~/Library/LaunchAgents/`
-  - WatchPaths on FleetingThoughts/ folder
-  - Triggers on new file detection
-  - Logs output for debugging
+- [ ] **Schedule `folder-watcher.ts` via launchd** *(BLOCKED — see launchd troubleshooting section above)*
+  - plist created, wrapper script created, compiled JS exists at `~/bin/fleeting-watcher/`
+  - Blocked by macOS iCloud Full Disk Access permission
+  - User may have already granted FDA to node — needs verification
 
 - [ ] **Schedule `process-inbox.ts` execution**
   - Option A: Vercel cron endpoint (every 15 min)
@@ -264,10 +334,32 @@ These are source material — consumed and distilled into this checklist. They r
 - This MASTER_CHECKLIST.md created
 - Read and analyzed all 3 agent scripts for gaps and update needs
 
-**In Progress:**
-- Tier 1 automation implementation (this session)
-
 **Pipeline State:** 0 inbox, 1 processing, 10 routed, 26 done, 13 archived
+
+### 2026-02-11 — Tier 1 Implementation + Graduation Workflow
+
+**Branch:** `feat/pipeline-automation-tier1` (3 commits, pushed)
+
+**Completed:**
+- `pipeline-rules.ts` created — shared module with guardrails, constants, utilities
+- `folder-watcher.ts` rewritten — hub file exclusion, PDF support, ledger logging
+- `process-inbox.ts` rewritten — status validation, project matching, ledger logging
+- Both scripts tested successfully (manual run)
+- Compiled JS deployed to `~/bin/fleeting-watcher/` for launchd
+- Bash fallback script also created at `~/bin/fleeting-watcher/folder-watcher.sh`
+- launchd plist created with WatchPaths on FleetingThoughts folder
+- Graduation workflow documented in `/fleeting` skill (checklist + feature doc + archive)
+- Split-before-graduate rule added
+- Feature doc folder convention established by project
+- Thought `7f62bf93` (Apple Ecosystem 2026) split into 3 project-specific children
+- All actions logged to Pipeline Ledger
+- 10 different launchd approaches tried — all blocked by macOS TCC/iCloud permissions
+- Full troubleshooting documented in this checklist for next agent
+
+**Blocked:**
+- launchd auto-trigger: macOS Full Disk Access needed for node to read iCloud from launchd context. User may have already added it — needs verification next session.
+
+**Pipeline State:** 3 new split-children (routed), original marked done
 
 ---
 
