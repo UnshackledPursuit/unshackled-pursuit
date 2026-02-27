@@ -37,7 +37,7 @@
 
 | Script | Location | What It Does | Status |
 |--------|----------|-------------|--------|
-| `folder-watcher.ts` | `agents/` | Ingests .md/.pdf/.txt from iCloud folder → Supabase | **Rewritten** (Tier 1). Works manually. launchd blocked by iCloud permission. |
+| `folder-watcher.ts` | `agents/` | Ingests .md/.pdf/.txt from iCloud folder → Supabase | **Rewritten** (Tier 1). **AUTOMATED via launchd** — `com.fleeting.folder-watcher` WatchPaths triggers on file drop. FDA resolved. |
 | `process-inbox.ts` | `agents/` | Keyword-based categorization of inbox items | **Rewritten** (Tier 1). Works manually. No scheduler yet. |
 | `process-thoughts.ts` | `agents/` | AI analysis + SPEC.md generation | **Unchanged.** Uses Anthropic API (costs $), violates no-graduation rule. Tier 2 conversion needed. |
 | `pipeline-rules.ts` | `agents/` | Shared module: guardrails, constants, utilities | **Created** (Tier 1). All scripts import from here. |
@@ -55,18 +55,18 @@
 
 ### What Doesn't Exist Yet
 
-- No automated processing (scripts work manually, launchd blocked by permission)
 - No local AI models installed (Ollama, MLX)
 - No Telegram bot
 - No SSH remote execution pipeline
 - No Wake-on-LAN
 - No daily digest
+- No scheduler for `process-inbox.ts` (web/mobile captures sit unprocessed until `/fleeting` is manually invoked)
 
 ---
 
 ## launchd + iCloud Troubleshooting (CRITICAL — Read Before Attempting)
 
-> **Status:** UNRESOLVED. The folder watcher works perfectly when run manually. Automating it via launchd is blocked by macOS iCloud Drive permissions.
+> **Status:** RESOLVED (2026-02-18). launchd folder watcher is loaded and running. FDA for node was granted. The approaches below are historical reference — the issue is solved.
 
 ### The Problem
 
@@ -193,10 +193,10 @@ This ensures the skill and scripts follow the same rules.
 - [x] **Fix and update `process-inbox.ts`** *(done 2026-02-11)*
   - pipeline-rules imports, ledger logging, dotenv, project matching, status validation
 
-- [ ] **Schedule `folder-watcher.ts` via launchd** *(BLOCKED — see launchd troubleshooting section above)*
-  - plist created, wrapper script created, compiled JS exists at `~/bin/fleeting-watcher/`
-  - Blocked by macOS iCloud Full Disk Access permission
-  - User may have already granted FDA to node — needs verification
+- [x] **Schedule `folder-watcher.ts` via launchd** *(RESOLVED 2026-02-18)*
+  - `com.fleeting.folder-watcher` loaded and running with WatchPaths
+  - FDA for node resolved — auto-triggers on any file drop into FleetingThoughts/
+  - Logs at `/tmp/fleeting-folder-watcher.log`
 
 - [ ] **Schedule `process-inbox.ts` execution**
   - Option A: Vercel cron endpoint (every 15 min)
@@ -308,6 +308,7 @@ These are source material — consumed and distilled into this checklist. They r
 | Autonomous Infrastructure Spec v2 | `_processed/AUTONOMOUS_INFRASTRUCTURE_SPEC_v2.md` | `3f7fd349` | Condensed version (520 lines) |
 | Local AI Setup Overview | `_processed/local-ai-setup-overview.pdf` | `9d24412a` | Ollama/MLX setup, SSH, Pi 5, M5 Ultra roadmap |
 | Open Source AI Models Reference | `_processed/open-source-ai-models-spec.md` | `b8e4650b` | Model catalog by use case (351 lines) |
+| AI System Architecture v3 | `docs/AI-SYSTEM-ARCHITECTURE.md` | `10c41c48` | North star: graduated autonomy, multi-agent architecture, full pipeline vision (818 lines) |
 | Pipeline Analysis | `docs/PIPELINE_ANALYSIS.md` | — | Gap analysis with implementation roadmap |
 | Future Features | `docs/FLEETING_FUTURE_FEATURES.md` | — | Feature roadmap: agents, automation, UI |
 | Agent Looping Reference | X post | `203e9e4b` | Agent looping patterns for evaluation |
@@ -361,9 +362,11 @@ These are source material — consumed and distilled into this checklist. They r
 
 **Pipeline State:** 3 new split-children (routed), original marked done
 
-### Next Session: SSH + Ollama Sprint (Tiers 1-3 Collapse)
+### Next Session: Ollama + Telegram Bot (Priority Build)
 
-**Insight:** SSH from Pi 5 → Mac via Tailscale runs scripts in a full user session with iCloud access. This bypasses the entire launchd/FDA permission problem AND sets up the infrastructure for Tiers 2-3 simultaneously.
+**Context (2026-02-18):** launchd folder watcher is confirmed working — FDA issue resolved. The SSH workaround is no longer the critical path for running scripts. The v3 architecture doc (`docs/AI-SYSTEM-ARCHITECTURE.md`) is the north star for the full system vision.
+
+**Revised insight:** With launchd working, the highest-impact next steps are: (1) install Ollama for local AI enrichment, (2) add a launchd timer for `process-inbox.ts` so web/mobile captures get auto-categorized, and (3) build the Telegram bot for phone-based capture + notifications. SSH from Pi 5 remains valuable for always-on processing when Mac is asleep but is no longer blocking.
 
 **Proposed architecture:**
 ```

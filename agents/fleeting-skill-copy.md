@@ -341,6 +341,8 @@ When processing inbox items, classify each as:
 | **App Feedback** | Assign to project, tag: feedback | Processing → Routed |
 | **Test Data** | Archive immediately | Archived |
 
+> **Future category (not yet implemented):** **Curiosity / Explore Later** — thoughts that aren't actionable, not reference material, just "I heard a thing, remind me to look into it." No project assignment needed. Tag as `curiosity` and leave in pipeline as low-priority searchable items. When the user asks "what was that thing I heard about?" these surface immediately. Could also trigger a quick exploratory prompt on the spot. Revisit after a few sessions of manually tagging these to see if a dedicated workflow is worth building. Example: "Mini USB sequencer" — heard on a podcast, no project tie, just wanted to remember and explore later.
+
 ---
 
 ## Actions by Request Type
