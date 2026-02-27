@@ -35,6 +35,25 @@
 
 ---
 
+## Apple MLX Stack (~/ai-tools venv)
+
+Python virtual environment at `~/ai-tools/` for Apple's ML framework and related tools.
+Activate: `source ~/ai-tools/bin/activate`
+
+| Package | Version | Installed | Purpose | Update |
+|---------|---------|-----------|---------|--------|
+| MLX | 0.30.6 | Feb 26 2026 | Apple ML framework — optimized for Apple Silicon unified memory | `pip install --upgrade mlx` |
+| mlx-metal | 0.30.6 | Feb 26 2026 | Metal GPU backend for MLX | Updates with mlx |
+| mlx-lm | 0.30.7 | Feb 26 2026 | LLM inference/serving via MLX (alternative to Ollama) | `pip install --upgrade mlx-lm` |
+| mlx-whisper | 0.4.3 | Feb 26 2026 | Faster Whisper on Apple Silicon via MLX backend | `pip install --upgrade mlx-whisper` |
+| transformers | 5.2.0 | Feb 26 2026 | HuggingFace model loading (dependency) | Updates with mlx-lm |
+
+**Why a venv?** PEP 668 blocks system-wide pip installs on modern Python. The `~/ai-tools/` venv keeps MLX and its dependencies isolated without breaking the system Python. Whisper CLI was installed via pipx (separate isolation). Both approaches are clean and don't conflict.
+
+**MLX vs Ollama:** Both run models on Apple Silicon GPU. Ollama is simpler (one command, manages downloads). MLX gives more control (direct HuggingFace model access, custom inference, faster Whisper). They coexist — Ollama for quick pipeline tasks, MLX for when we need lower-level access or speed.
+
+---
+
 ## Local AI Models (Ollama)
 
 Ollama server must be running for API access: `ollama serve`
@@ -152,7 +171,7 @@ Managed via `package.json`. Update: `npm update`. Audit: `npm audit` / `npm audi
 
 | Tool | Priority | Purpose | Install | Blocked By |
 |------|----------|---------|---------|------------|
-| MLX | MEDIUM | Apple ML runtime, faster Whisper/LLMs | `pip3 install mlx mlx-lm` | Nothing (next up) |
+| ~~MLX~~ | ~~MEDIUM~~ | ~~Installed Feb 26~~ | ~~See MLX Stack section above~~ | ~~Done~~ |
 | WhisperKit | LATER | On-device speech for visionOS apps (Swift SPM) | SPM package | CaptionFlow v1.0 ships first |
 | ImageMagick | LATER | Template-based marketing image generation | `brew install imagemagick` | Social media pipeline build |
 | PySceneDetect | LATER | Advanced scene detection | `pip3 install scenedetect` | ffmpeg handles basics already |
@@ -170,11 +189,14 @@ brew update && brew upgrade
 # 2. Update Whisper
 pipx upgrade openai-whisper
 
-# 3. Check npm vulnerabilities
+# 3. Update MLX stack
+source ~/ai-tools/bin/activate && pip install --upgrade mlx mlx-lm mlx-whisper && deactivate
+
+# 4. Check npm vulnerabilities
 cd ~/Library/Mobile\ Documents/com~apple~CloudDocs/Assets/Learning/Apps/Websites/DKRHUB/unshackled-pursuit
 npm audit
 
-# 4. Update Ollama models (if new versions available)
+# 5. Update Ollama models (if new versions available)
 ollama pull llama3.2
 ollama pull qwen3:4b  # once installed
 ```
