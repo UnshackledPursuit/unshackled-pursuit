@@ -13,6 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://unshackledpursuit.com'),
   title: "Unshackled Pursuit | Software Development",
   description: "Building software that matters. Custom applications, web development, and visionOS experiences.",
   manifest: "/manifest.json",
@@ -23,6 +24,20 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+  },
+  openGraph: {
+    title: "Unshackled Pursuit | Software Development",
+    description: "Building software that matters. Custom applications, web development, and visionOS experiences.",
+    images: ["/screenshot-orbs-beach.png"],
+    siteName: "Unshackled Pursuit",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Unshackled Pursuit | Software Development",
+    description: "Building software that matters. Custom applications, web development, and visionOS experiences.",
+    images: ["/screenshot-orbs-beach.png"],
   },
 };
 
@@ -46,6 +61,19 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Unshackled Pursuit",
+              url: "https://unshackledpursuit.com",
+              description:
+                "Building software that matters. Custom applications, web development, and visionOS experiences.",
+            }),
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
