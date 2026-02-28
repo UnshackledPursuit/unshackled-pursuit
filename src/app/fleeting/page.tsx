@@ -1170,9 +1170,9 @@ function ThoughtCard({
                 {new Date(thought.captured_at).toLocaleDateString()}
               </span>
               <div className="flex gap-1">
-                {thought.suggested_destination && (
-                  <span className="text-xs" title={DESTINATIONS[thought.suggested_destination].name}>
-                    {DESTINATIONS[thought.suggested_destination].icon}
+                {thought.suggested_destination && DESTINATIONS[thought.suggested_destination as Destination] && (
+                  <span className="text-xs" title={DESTINATIONS[thought.suggested_destination as Destination].name}>
+                    {DESTINATIONS[thought.suggested_destination as Destination].icon}
                   </span>
                 )}
                 {thought.ai_analysis && (
