@@ -13,7 +13,7 @@ const CAPTURE_TOKEN = process.env.CAPTURE_TOKEN?.trim();
 // Your user ID (from Supabase)
 const USER_ID = '18a92969-5664-4d63-95fc-d8481e6c42e2';
 
-const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation', 'intelligence-feed'];
+const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation', 'intelligence-feed', 'user-action', 'health-insight', 'agent-activity', 'metrics-feed', 'media-feed'];
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     // Get content from body
     const body = await request.json();
-    const { content, source = 'shortcut' } = body;
+    const { content, source = 'shortcut', tags, metadata } = body;
 
     if (!content || typeof content !== 'string') {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
@@ -46,17 +46,25 @@ export async function POST(request: NextRequest) {
     // Detect if it's a URL
     const isUrl = /^https?:\/\//.test(content.trim());
 
+    // Build insert payload
+    const insertPayload: Record<string, unknown> = {
+      content: content.trim(),
+      user_id: USER_ID,
+      content_type: isUrl ? 'link' : 'text',
+      source: source,
+      status: 'inbox',
+      url: isUrl ? content.trim() : null,
+    };
+
+    // Pass through tags if provided
+    if (Array.isArray(tags) && tags.length > 0) {
+      insertPayload.tags = tags;
+    }
+
     // Insert into Supabase
     const { data, error } = await supabase
       .from('fleeting_thoughts')
-      .insert({
-        content: content.trim(),
-        user_id: USER_ID,
-        content_type: isUrl ? 'link' : 'text',
-        source: source,
-        status: 'inbox',
-        url: isUrl ? content.trim() : null,
-      })
+      .insert(insertPayload)
       .select()
       .single();
 
