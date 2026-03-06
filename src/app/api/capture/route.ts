@@ -13,7 +13,7 @@ const CAPTURE_TOKEN = process.env.CAPTURE_TOKEN?.trim();
 // Your user ID (from Supabase)
 const USER_ID = '18a92969-5664-4d63-95fc-d8481e6c42e2';
 
-const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation'];
+const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation', 'intelligence-feed'];
 
 export async function POST(request: NextRequest) {
   try {
