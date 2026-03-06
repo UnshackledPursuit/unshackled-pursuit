@@ -3,15 +3,17 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // Use service key for server-side insert
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL!.trim(),
+  process.env.SUPABASE_SERVICE_KEY!.trim()
 );
 
 // Simple token auth for shortcuts
-const CAPTURE_TOKEN = process.env.CAPTURE_TOKEN;
+const CAPTURE_TOKEN = process.env.CAPTURE_TOKEN?.trim();
 
 // Your user ID (from Supabase)
 const USER_ID = '18a92969-5664-4d63-95fc-d8481e6c42e2';
+
+const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation'];
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,6 +31,16 @@ export async function POST(request: NextRequest) {
 
     if (!content || typeof content !== 'string') {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+    }
+
+    // Input length limit
+    if (content.length > 5000) {
+      return NextResponse.json({ error: 'Content too long (max 5000 characters)' }, { status: 400 });
+    }
+
+    // Validate source against allow-list
+    if (!ALLOWED_SOURCES.includes(source)) {
+      return NextResponse.json({ error: 'Invalid source' }, { status: 400 });
     }
 
     // Detect if it's a URL
@@ -50,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Supabase error:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: 'Failed to capture thought' }, { status: 500 });
     }
 
     return NextResponse.json({
