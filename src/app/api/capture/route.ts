@@ -13,7 +13,7 @@ const CAPTURE_TOKEN = process.env.CAPTURE_TOKEN?.trim();
 // Your user ID (from Supabase)
 const USER_ID = '18a92969-5664-4d63-95fc-d8481e6c42e2';
 
-const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation', 'intelligence-feed', 'user-action', 'health-insight', 'agent-activity', 'metrics-feed', 'media-feed'];
+const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation', 'intelligence-feed', 'user-action', 'health-insight', 'agent-activity', 'metrics-feed', 'media-feed', 'media-review', 'dashboard-review', 'agent-review', 'board-review', 'chrome-extraction'];
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,6 +59,11 @@ export async function POST(request: NextRequest) {
     // Pass through tags if provided
     if (Array.isArray(tags) && tags.length > 0) {
       insertPayload.tags = tags;
+    }
+
+    // Pass through metadata if provided
+    if (metadata && typeof metadata === 'object') {
+      insertPayload.metadata = metadata;
     }
 
     // Insert into Supabase
