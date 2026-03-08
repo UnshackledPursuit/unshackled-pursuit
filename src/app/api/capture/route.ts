@@ -13,7 +13,7 @@ const CAPTURE_TOKEN = process.env.CAPTURE_TOKEN?.trim();
 // Your user ID (from Supabase)
 const USER_ID = '18a92969-5664-4d63-95fc-d8481e6c42e2';
 
-const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation', 'intelligence-feed', 'user-action', 'health-insight', 'agent-activity', 'metrics-feed', 'media-feed', 'media-review', 'dashboard-review', 'agent-review', 'board-review', 'chrome-extraction'];
+const ALLOWED_SOURCES = ['shortcut', 'mobile', 'manual', 'share_extension', 'agent', 'iphone-dictation', 'mac-dictation', 'intelligence-feed', 'user-action', 'health-insight', 'agent-activity', 'metrics-feed', 'media-feed', 'media-review', 'dashboard-review', 'agent-review', 'board-review', 'chrome-extraction', 'dashboard-capture'];
 
 const ALLOWED_ORIGINS = ['https://fleetingthoughts.app', 'https://www.unshackledpursuit.com', 'https://unshackledpursuit.com'];
 
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     // Get content from body
     const body = await request.json();
-    const { content, source = 'shortcut', tags, metadata } = body;
+    const { content, source = 'shortcut', tags, metadata, priority } = body;
 
     if (!content || typeof content !== 'string') {
       return NextResponse.json({ error: 'Content is required' }, { status: 400, headers });
@@ -74,6 +74,12 @@ export async function POST(request: NextRequest) {
       status: 'inbox',
       url: isUrl ? content.trim() : null,
     };
+
+    // Pass through priority if provided
+    const validPriorities = ['high', 'medium', 'low', 'someday'];
+    if (priority && validPriorities.includes(priority)) {
+      insertPayload.priority = priority;
+    }
 
     // Pass through tags if provided
     if (Array.isArray(tags) && tags.length > 0) {
