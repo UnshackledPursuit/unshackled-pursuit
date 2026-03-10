@@ -8,383 +8,233 @@ allowed-tools: Read, Glob, Grep, Bash
 
 ## Quick Start
 
-1. Read the hub context file for architecture and current state:
-   `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/FleetingThoughts/AGENTS.md`
-
-2. **Scan the FleetingThoughts folder for unprocessed files** (see File Scanning below)
-
-3. Query Supabase for live data (see commands below)
-
-4. Act on the request (review, process, status, organize, next)
-
-5. **Log all actions to the pipeline ledger** (see Ledger below)
+1. Read hub context: `FleetingThoughts/AGENTS.md`
+2. Scan `FleetingThoughts/` folder for unprocessed files (anything not CLAUDE.md, AGENTS.md, or in `_processed/`)
+3. Query Supabase for live data (commands below)
+4. Act on the request
+5. Log actions to Pipeline Ledger
 
 ---
 
-## File Scanning (CRITICAL — Do This Every Session)
-
-Before querying Supabase, scan the FleetingThoughts folder for files that aren't tracked yet.
-
-**Folder:** `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/FleetingThoughts/`
-
-**What to scan for:** Any PDF, .md, or other document files in the top-level folder that are NOT:
-- `CLAUDE.md`, `AGENTS.md` (hub docs — always stay)
-- Files already in `_processed/` subfolder
-
-**What to do with unprocessed files:**
-1. Read each file to understand its contents
-2. Report them to the user as "unprocessed files found in FleetingThoughts folder"
-3. For each file, suggest: project assignment, priority, tags
-4. If approved, create a Supabase entry (POST) with:
-   - `content`: Text summary of the document
-   - `content_type`: pdf, text, etc.
-   - `source`: "manual"
-   - `routed_to`: Original file path (e.g., `FleetingThoughts/filename.pdf`)
-   - `ai_analysis`: Detailed breakdown of contents
-5. Move the file to `_processed/` (see File Processing below)
-
-This ensures nothing dropped into the FleetingThoughts folder gets lost or forgotten.
-
----
-
-## File Processing (_processed/ Workflow)
-
-When a thought reaches **processing** or **routed** status and has an associated source file:
-
-1. **Move the source file** from `FleetingThoughts/` to `FleetingThoughts/_processed/`
-2. **Convert PDF to Markdown** if the file is a PDF:
-   - Use Claude's PDF reading capability to extract content
-   - Write an .md version in `_processed/` with the same base name
-   - Keep the original PDF in `_processed/` as backup until the .md is confirmed good
-3. **Update the Supabase entry** `routed_to` field to reflect the new path in `_processed/`
-
-This keeps the main FleetingThoughts folder clean — only new/unprocessed files sit at the top level.
-
----
-
-## Pipeline Ledger (CRITICAL — Log Every Action)
-
-**Location:** `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md`
-
-Every processing action MUST be logged to the ledger. This serves two purposes:
-1. **Archive/tracking** — what moved where, when, and why
-2. **Learning** — study agent routing accuracy and identify process tweaks
-
-**What to log (append a new entry for each action):**
-
-```markdown
-| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
-```
-
-- **Date**: ISO date of the action
-- **Thought ID**: First 8 chars of the UUID
-- **Summary**: Brief description of the thought
-- **Action**: What was done (created, categorized, routed, graduated, archived, deleted, merged, split)
-- **Project**: Which project it was assigned to (or "none")
-- **Reasoning**: Why this routing decision was made
-- **Outcome**: Where it ended up (checklist path, archive, reference, etc.)
-
-**Always log:** status changes, project assignments, file moves, merges, splits, deletions, graduations to checklists.
-
-The ledger is version-controlled in the Unshackled Pursuit repo and should be committed after each processing session.
-
-**Future automation note:** When automated scripts (`process-inbox.ts`, `process-thoughts.ts`, or any future cron/scheduled jobs) are wired up to run without the `/fleeting` skill context, they MUST have ledger logging built into the script itself. The skill enforces logging for agent sessions, but scripts running independently will bypass the skill. Wire ledger append logic directly into any script that modifies Supabase data.
-
----
-
-## Supabase Access (CRITICAL)
-
-**Instance:** `https://ygcgzwlzyrvwshtlxpsc.supabase.co`
-
-**Auth:** RLS is enabled. The anon key returns empty results because there's no user session.
-You MUST use the service key as the `apikey` header to bypass RLS.
+## Supabase Access
 
 ```bash
-# Load credentials from .env.local (NEVER hardcode keys)
-ENV_FILE=~/Library/Mobile\ Documents/com~apple~CloudDocs/Assets/Learning/Apps/Websites/DKRHUB/unshackled-pursuit/.env.local
+ENV_FILE=~/"_Business HUB/3.0_Hub/AGENTIC/.keys/.env.local"
 SUPABASE_URL=$(grep NEXT_PUBLIC_SUPABASE_URL "$ENV_FILE" | cut -d'=' -f2)
 SERVICE_KEY=$(grep SUPABASE_SERVICE_KEY "$ENV_FILE" | cut -d'=' -f2)
-```
 
-### Read All Thoughts
-```bash
+# Read inbox
+curl -s "${SUPABASE_URL}/rest/v1/fleeting_thoughts?select=*&status=eq.inbox&order=captured_at.desc" \
+  -H "apikey: ${SERVICE_KEY}" -H "Authorization: Bearer ${SERVICE_KEY}" -H "Range: 0-99"
+
+# Read all thoughts
 curl -s "${SUPABASE_URL}/rest/v1/fleeting_thoughts?select=*&order=captured_at.desc" \
-  -H "apikey: ${SERVICE_KEY}" \
-  -H "Authorization: Bearer ${SERVICE_KEY}" \
-  -H "Range: 0-99"
-```
+  -H "apikey: ${SERVICE_KEY}" -H "Authorization: Bearer ${SERVICE_KEY}" -H "Range: 0-99"
 
-### Read All Projects
-```bash
-curl -s "${SUPABASE_URL}/rest/v1/projects?select=*" \
-  -H "apikey: ${SERVICE_KEY}" \
-  -H "Authorization: Bearer ${SERVICE_KEY}" \
-  -H "Range: 0-99"
-```
+# Update a thought (PATCH)
+curl -s -X PATCH "${SUPABASE_URL}/rest/v1/fleeting_thoughts?id=eq.<ID>" \
+  -H "apikey: ${SERVICE_KEY}" -H "Authorization: Bearer ${SERVICE_KEY}" \
+  -H "Content-Type: application/json" -H "Prefer: return=representation" \
+  -d '{"status": "done", "priority": "high"}'
 
-### Filter by Status
-```bash
-# Get inbox items only
-curl -s "${SUPABASE_URL}/rest/v1/fleeting_thoughts?select=*&status=eq.inbox" \
-  -H "apikey: ${SERVICE_KEY}" \
-  -H "Authorization: Bearer ${SERVICE_KEY}"
-```
-
-### Update a Thought (PATCH)
-```bash
-curl -s -X PATCH "${SUPABASE_URL}/rest/v1/fleeting_thoughts?id=eq.<THOUGHT_ID>" \
-  -H "apikey: ${SERVICE_KEY}" \
-  -H "Authorization: Bearer ${SERVICE_KEY}" \
-  -H "Content-Type: application/json" \
-  -H "Prefer: return=representation" \
-  -d '{"status": "done", "priority": "high", "project_id": "<PROJECT_ID>"}'
-```
-
-### Insert a New Thought (POST)
-```bash
+# Insert a thought (POST)
 curl -s -X POST "${SUPABASE_URL}/rest/v1/fleeting_thoughts" \
-  -H "apikey: ${SERVICE_KEY}" \
-  -H "Authorization: Bearer ${SERVICE_KEY}" \
-  -H "Content-Type: application/json" \
-  -H "Prefer: return=representation" \
+  -H "apikey: ${SERVICE_KEY}" -H "Authorization: Bearer ${SERVICE_KEY}" \
+  -H "Content-Type: application/json" -H "Prefer: return=representation" \
   -d '{"content": "...", "content_type": "text", "source": "agent", "status": "inbox", "user_id": "18a92969-5664-4d63-95fc-d8481e6c42e2"}'
 ```
 
-### Delete a Thought (DELETE)
-```bash
-curl -s -X DELETE "${SUPABASE_URL}/rest/v1/fleeting_thoughts?id=eq.<THOUGHT_ID>" \
-  -H "apikey: ${SERVICE_KEY}" \
-  -H "Authorization: Bearer ${SERVICE_KEY}"
-```
+**User ID:** `18a92969-5664-4d63-95fc-d8481e6c42e2`
 
 ---
 
-## Project IDs (for assigning thoughts)
+## Project IDs
 
-| Project | ID | Color |
-|---------|-----|-------|
-| WaypointHub | `3e4b5a48-07a7-4a77-8c54-504560208397` | green |
-| Spatialis | `be4e8911-df8c-49b0-bcb1-4af7db185eca` | cyan |
-| Construct Ideas | `291bc648-719d-41d6-bcfc-4334076cb22d` | amber |
-| Fleeting Thoughts | `af3cc925-78dd-4ee1-863d-35735619c423` | purple |
-| Unshackled Pursuit | `07cb1d12-0a06-44fd-bc94-a034dd89fca8` | blue |
-| Network | `85a0105c-6394-45e9-ac86-272a4dde197d` | slate |
-
-**User ID (owner):** `18a92969-5664-4d63-95fc-d8481e6c42e2`
+| Project | ID |
+|---------|-----|
+| WaypointHub | `3e4b5a48-07a7-4a77-8c54-504560208397` |
+| Spatialis | `be4e8911-df8c-49b0-bcb1-4af7db185eca` |
+| Construct Ideas | `291bc648-719d-41d6-bcfc-4334076cb22d` |
+| Fleeting Thoughts | `af3cc925-78dd-4ee1-863d-35735619c423` |
+| Unshackled Pursuit | `07cb1d12-0a06-44fd-bc94-a034dd89fca8` |
+| Network | `85a0105c-6394-45e9-ac86-272a4dde197d` |
 
 ---
 
-## Pipeline Flow
+## Active Tools (What Actually Runs)
 
-```
-Capture (Web UI, Mobile, Voice, Shortcuts, Feedback Forms, FleetingThoughts folder)
-    ↓
-Inbox (Supabase: status='inbox')
-    ↓
-Processing (categorized, assigned project/priority/tags)
-    ↓                              ↓
-    └── Source file moves to _processed/ (PDF → MD conversion)
-    ↓
-Routed (destination assigned, ready for action)
-    ↓                              ↓
-    └── Source file moves to _processed/ if not already moved
-    ↓
-Done → Graduated to project MASTER_CHECKLIST.md
-    ↓
-Archived (fully consumed, reference only)
-```
+| Tool | Where | What It Does |
+|------|-------|-------------|
+| Process queue agent | `AGENTIC/agents/process-queue.sh` | Auto-processes iPhone podcast captures (every 30 min, launchd) |
+| User-action handler | `AGENTIC/agents/process-user-actions.sh` | Handles Dig Deeper/Implement from FT app (every 30 min, launchd) |
+| Intelligence POST | `AGENTIC/agents/intelligence-post.sh` | POSTs briefs/intelligence to Supabase pipeline |
+| Morning digest | `AGENTIC/agents/prompts/morning-digest.md` | Daily summary of overnight agent output |
+| Knowledge DB search | `AGENTIC/search` | FTS5 + vector search across ecosystem docs |
+| Web dashboard | `fleetingthoughts.app` | Board, agents, media queue, analytics |
+| iOS app | Share Extension + direct capture → Supabase |
+| Mac app | Hotkey capture, local only |
+| This skill (`/fleeting`) | Manual triage when invoked |
 
-**Key rule:** Both **processing** and **routed** statuses trigger moving source files to `_processed/`.
+**Not running (archived Gen 1):** `folder-watcher.ts`, `process-inbox.ts`, `process-thoughts.ts` in `Websites/.../agents/`. These are old Node scripts. Ignore them.
 
 ---
 
-## Key Locations
+## X Link Processing
 
-| Purpose | Path |
-|---------|------|
-| Hub (start here) | `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/FleetingThoughts/` |
-| Hub AGENTS.md | `FleetingThoughts/AGENTS.md` |
-| Processed files | `FleetingThoughts/_processed/` |
-| Website Code | `Websites/DKRHUB/unshackled-pursuit/` |
-| Agent Scripts | `Websites/DKRHUB/unshackled-pursuit/agents/` |
-| Pipeline Ledger | `Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md` |
-| Master Checklist | `Websites/DKRHUB/unshackled-pursuit/docs/MASTER_CHECKLIST.md` |
-| Skill Backup | `Websites/DKRHUB/unshackled-pursuit/agents/fleeting-skill-copy.md` |
-| Output Folder | `Construct/Ideas/` |
-| Conductor | `Construct/CONDUCTOR.md` |
+X links are the highest-signal intelligence source. They require special handling because X blocks non-JS access.
 
-All paths relative to: `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/`
+**System docs (read these for full methodology):**
+- Grok Extraction SOP: `AGENTIC/agents/prompts/grok-extraction-sop.md`
+- Person of Interest: `AGENTIC/PERSON_OF_INTEREST.md` (S/A/B trust tiers)
+- Chrome MCP reference: `AGENTIC/agents/prompts/tool-reference-chrome-mcp.md`
+- Process documentation: `AGENTIC/_briefs/fleeting-pipeline-audit-2026-03-09.md` (X Link Processing Playbook section)
 
----
+**Quick process:**
+1. Identify X links in inbox (URLs with `x.com/` or `twitter.com/`)
+2. Report X links separately from regular items ("12 items + 18 X links")
+3. Check author against Person of Interest registry
+4. Use Chrome MCP → screenshot to read posts (more reliable than get_page_text on X)
+5. For high-signal clusters: Grok Expert + Gemini Thinking for deep research
+6. Classify each as Type A or Type B (see Closing the Loop below)
+7. PATCH status immediately — don't leave processed items in inbox
 
-## Master Checklists (Graduation Destinations)
-
-| Project | Checklist Location |
-|---------|-------------------|
-| Spatialis | `Construct/Ideas/Sigil/MASTER_CHECKLIST.md` |
-| WaypointHub | `Waypoint/MASTER_CHECKLIST.md` |
-| Construct Ideas (incubator) | `Construct/Ideas/MASTER_CHECKLIST.md` |
-
-**Fleeting Thoughts pipeline tasks** are tracked in the Pipeline Ledger, not a separate checklist.
+**Heuristics for autonomous evaluation** are codified in the audit brief under "User Evaluation Heuristics."
 
 ---
 
-## Graduation Workflow (Thought → Checklist → Feature Doc)
+## Intelligence Routing
 
-When a routed thought is ready to graduate to a project checklist:
-
-### Step 1: Add to Checklist
-- If a thought contains multiple distinct features or action items, **split it into separate thoughts first** (one per feature), then graduate each individually.
-- Add or update the item in the project's MASTER_CHECKLIST.md
-- Keep it to a **one-liner with priority** — the checklist stays lean
-- Reference the detail doc path if one is created (Step 2)
-
-### Step 2: Extract Feature Detail Doc (if rich content)
-Not every thought needs a doc. But if the thought contains:
-- Multiple approaches/angles worth preserving
-- Architectural detail or specs
-- Implementation notes that would bloat the checklist
-
-Then extract to the project's **feature doc folder**:
-- **Version-scoped** (tied to a specific release): `{project}/Features/v{X}/FEATURE_NAME.md`
-- **Version-agnostic** (not yet assigned to a release): `{project}/Features/FEATURE_NAME.md`
-
-Once a version-agnostic feature gets pulled into a release, move it into that version's folder.
-
-Checklist item should reference the doc:
-```
-| FUT-XX | Feature Name | HIGH v1.2 | See Features/FEATURE_NAME.md |
-```
-
-### Step 3: Archive the Thought
-- PATCH status to `archived` in Supabase
-- Update `routed_to` to reference the final doc location
-- The value has been extracted — the thought is consumed
-
-### Step 4: Log in Pipeline Ledger
-- Action: `graduated`
-- Outcome: checklist item ID + doc path (if created)
-- Reasoning: why this routing was chosen
-
-### Key Principle: Preserve Distinct Angles
-Different thoughts about the same feature may capture **different angles or approaches**. Before archiving, compare the thought content against existing checklist items. If the thought adds a unique perspective (different implementation approach, different use case, different scope), preserve that angle — either as notes in the feature detail doc or as a separate checklist item. Don't deduplicate ideas that look similar but are actually distinct approaches. When the feature is eventually built, having multiple angles documented means options can be evaluated.
-
-### Feature Doc Folder Convention by Project
-
-| Project | Feature Docs Location |
-|---------|----------------------|
-| Spatialis | `Construct/Ideas/Sigil/Features/` |
-| Spatialis (versioned) | `Construct/Ideas/Sigil/Features/v{X}/` |
-| WaypointHub | `Waypoint/Features/` (create when needed) |
-| Other projects | `{project_root}/Features/` |
-
-**Note:** Some projects may use existing folder conventions (e.g., Spatialis has `Apple Communication/` for App Store docs). Feature docs are separate — they capture design intent and implementation options, not App Store content.
-
----
-
-## Current Capabilities (Honest Assessment)
-
-### What Actually Works Right Now
-- **Web Kanban UI** at unshackledpursuit.com/fleeting (capture + drag-drop)
-- **Supabase storage** with RLS (fleeting_thoughts + projects tables)
-- **This skill** (`/fleeting`) - Claude can read, categorize, update, and organize thoughts
-- **File scanning** - checks FleetingThoughts folder for unprocessed documents
-- **Pipeline Ledger** - tracks all routing decisions for study/learning
-- **API capture endpoint** at `/api/capture` (Shortcuts, feedback forms)
-- **Mobile capture** via website (text, voice, paste)
-
-### What Exists But Doesn't Run Automatically
-- `folder-watcher.ts` - works when manually invoked, no scheduler
-- `process-inbox.ts` - keyword triage, works manually, no scheduler
-- `process-thoughts.ts` - uses Anthropic API (costs money), needs CLI conversion
-
-### What Doesn't Exist Yet
-- No automated processing (thoughts sit in inbox until manually handled)
-- No Telegram bot
-- No SSH remote execution pipeline
-- No local AI (Ollama/MLX) installed
-- No Wake-on-LAN
-- No daily digest
-- No auto-routing
-
-### What /fleeting CAN Do Today
-When invoked, Claude can:
-1. Scan FleetingThoughts folder for unprocessed files
-2. Pull all thoughts from Supabase
-3. Categorize them (app idea, feature request, bug, reminder, reference, test)
-4. Assign projects to untagged items
-5. Set priorities and tags
-6. Move items between statuses
-7. Move source files to `_processed/` (with PDF → MD conversion)
-8. Identify stuck/stale items
-9. Suggest what to work on next
-10. Create SPEC.md files for actionable ideas (in Construct/Ideas/)
-11. Log all actions to the Pipeline Ledger
-
-This is the **manual processing step** until automation exists.
+| What | Where It Goes |
+|------|-------------|
+| Actionable intelligence | Supabase via `intelligence-post.sh` |
+| Person of Interest updates | `AGENTIC/PERSON_OF_INTEREST.md` |
+| Strategic trends | `AGENTIC/strategic-context.md` |
+| Tools/repos to evaluate | Supabase via `intelligence-post.sh` (tag: `tool-candidate`) |
+| Buildable features | Project's MASTER_CHECKLIST.md |
+| Research/podcasts/articles | Brief in `AGENTIC/_briefs/` |
 
 ---
 
 ## Thought Categories
 
-When processing inbox items, classify each as:
-
-| Category | Action | Route |
-|----------|--------|-------|
-| **App Idea** (new project) | Create SPEC.md in Construct/Ideas/ | Routed → Construct Ideas project |
-| **App Feature** (existing project) | Assign to project, set priority | Processing → Routed |
-| **Bug Report** | Assign to project, priority high | Processing → Routed |
-| **Pipeline Improvement** | Assign to Fleeting Thoughts project | Processing → Routed |
-| **Infrastructure/Automation** | Assign to Fleeting Thoughts project | Processing → Routed |
-| **Personal Reminder** | Flag for Reminders routing | Routed (destination: reminders) |
-| **Reference/Research** | Tag, set destination: reference | Routed (destination: reference) |
-| **App Feedback** | Assign to project, tag: feedback | Processing → Routed |
-| **Test Data** | Archive immediately | Archived |
-
-> **Future category (not yet implemented):** **Curiosity / Explore Later** — thoughts that aren't actionable, not reference material, just "I heard a thing, remind me to look into it." No project assignment needed. Tag as `curiosity` and leave in pipeline as low-priority searchable items. When the user asks "what was that thing I heard about?" these surface immediately. Could also trigger a quick exploratory prompt on the spot. Revisit after a few sessions of manually tagging these to see if a dedicated workflow is worth building. Example: "Mini USB sequencer" — heard on a podcast, no project tie, just wanted to remember and explore later.
+| Category | Route |
+|----------|-------|
+| **App Idea** (new) | Create SPEC.md in `Construct/Ideas/` |
+| **App Feature** (existing) | Assign to project, graduate to checklist |
+| **Bug Report** | Assign to project, priority high |
+| **X Link** | Separate pipeline (see above) |
+| **Research/Podcast/Article** | Brief to `AGENTIC/_briefs/` |
+| **Strategic Awareness** | `AGENTIC/strategic-context.md` |
+| **Pipeline Improvement** | Assign to Fleeting Thoughts project |
+| **Personal Reminder** | Flag for reminders |
+| **Reference** | Tag, archive with URL |
+| **Test Data** | Archive immediately |
 
 ---
 
-## Actions by Request Type
+## Board Columns (Confirmed Mar 9)
 
-### "review" or "status"
-1. **Scan FleetingThoughts folder** for unprocessed files
-2. Query all thoughts and projects
-3. Count by status (inbox/processing/routed/done/archived)
-4. Identify stuck items (in processing with no ai_analysis)
-5. Report unassigned items (no project_id)
-6. Report any unprocessed files in the folder
-7. Compare to spec for gaps
+| Column | Status Value | Purpose |
+|--------|-------------|---------|
+| **Inbox** | `inbox` | User captures (non-URL), raw/unprocessed |
+| **Links** | `links` | URLs auto-route here (X links, YouTube, GitHub, references) |
+| **Intel** | `intel` | Processed items with readable analysis. User reviews, decides action. |
+| **Agent Queue** | `agent_queue` | Items forwarded to agents for processing |
+| **Agent Log** | `done` | Agent output — autonomous results + completed queue items. (Agents already POST as `done` — just rename the column on the board. Change status value later in dedicated session.) |
+| **Archived** | `archived` | End state. Fully consumed. Retains all tags. |
 
-### "process"
-1. **Scan FleetingThoughts folder** for unprocessed files
-2. Pull inbox items
-3. Categorize each (see table above)
-4. Assign projects, priorities, tags
-5. Update via PATCH
-6. Move items to appropriate status
-7. Move source files to `_processed/` (convert PDF → MD)
-8. **Log all actions to Pipeline Ledger**
+**Active count** = Inbox + Links + Intel + Agent Queue. Agent Log and Archived do NOT count.
 
-### "organize"
-1. Pull all thoughts
-2. Identify misplaced items (wrong status, missing project)
-3. Clean up test data
-4. Ensure processing items have analysis or move back to inbox
-5. Update stale items
-6. **Log all actions to Pipeline Ledger**
+## Pipeline Flow
 
-### "next"
-1. Check current state
-2. Identify highest-impact unblocked action
-3. Consider: what would make the pipeline more autonomous?
+```
+User capture → Inbox → (process) → Intel → Archived
+                                       └──→ Agent Queue → Agent Log → Archived
+URL capture  → Links → (process) → Intel → Archived
+Agent output → Agent Log (directly)
+```
+
+**Rules:**
+- Always set `ai_analysis` with readable summary (not just the URL)
+- Always tag with project + type
+- CLOSE THE LOOP every session — no processed items left in inbox
+- Source files in FleetingThoughts/ move to `_processed/` when processing/routed
 
 ---
 
-## Constraints
-- NO Anthropic API costs - use Claude CLI (subscription) or local models
-- Tailscale connects Pi 5 and MacBook
-- Conductor (CONDUCTOR.md) orchestrates agents: Ralph (builder), Explorer (research)
-- All SPEC files go in `Construct/Ideas/{ProjectName}/SPEC.md`
-- All processing actions logged to Pipeline Ledger
-- Skill backup kept in sync at `unshackled-pursuit/agents/fleeting-skill-copy.md`
+## Closing the Loop (MANDATORY after processing)
+
+Every processed item MUST be moved out of inbox. Classify as:
+
+| Type | What It Is | Status | Tags | Example |
+|------|-----------|--------|------|---------|
+| **A: Extracted** | Insight captured, no action needed | `archived` | project + type tags | Alex Finn commentary, duplicates |
+| **B: Intel** | Extracted + actionable, needs user eyes | `intel` | `intel` + project + type tags | Tobi Lutke validation, tool evaluations |
+| **C: Agent Handoff** | Needs agent research/implementation | `agent_queue` | project + type tags | "evaluate this repo", "implement this feature" |
+
+**Every PATCH must include:**
+- `status` — archived, intel, or agent_queue
+- `tags` — array with project + type (e.g., `["x-link","intel","research","agentic"]`)
+- `ai_analysis` — what it is, who posted it, trust tier, why it matters
+- `routed_to` — where the insight lives (brief path, strategic-context.md, checklist, etc.)
+
+**Duplicates:** Tag as `["duplicate"]`, archive, set `routed_to` to "duplicate".
+
+---
+
+## Actions by Request
+
+| Request | What to Do |
+|---------|------------|
+| "review" / "status" | Scan folder, query Supabase, count by status, identify stuck items |
+| "process" | Scan folder, pull inbox, categorize each, assign projects, update via PATCH, log to ledger |
+| "organize" | Find misplaced items, clean up test data, fix stale statuses |
+| "graduate" / "cleanup" | Move routed→done where value extracted, archive completed items |
+| "next" | Check state, suggest highest-impact action |
+
+---
+
+## Processing Discipline
+
+1. Understand user's current focus before routing anything
+2. Surface relevant items first — don't default to "clear inbox"
+3. Read full content before categorizing
+4. Routing accuracy > inbox zero
+5. Similar thoughts are NOT duplicates — preserve distinct angles
+6. iPhone → Supabase, Mac → local. Don't cross the streams.
+
+---
+
+## Pipeline Ledger
+
+**Location:** `Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md`
+
+Log every action: date, thought ID (first 8 chars), summary, action, project, reasoning, outcome.
+
+---
+
+## Pipeline Redesign (IN PROGRESS)
+
+The pipeline is actively being restructured. Full design docs, AI Council research, heuristics, and restructuring plan live in:
+
+**`AGENTIC/_briefs/fleeting-pipeline-audit-2026-03-09.md`**
+
+Read that brief before making structural changes. It contains: two-stage processing model, board column redesign, auto-routing rules, AI Council methodology, and the 11-item restructuring plan.
+
+---
+
+## Key Locations
+
+| What | Where |
+|------|-------|
+| Hub docs | `FleetingThoughts/AGENTS.md` |
+| This skill | `skills/fleeting/SKILL.md` |
+| AGENTIC agents | `AGENTIC/agents/` |
+| Intelligence briefs | `AGENTIC/_briefs/` |
+| Person of Interest | `AGENTIC/PERSON_OF_INTEREST.md` |
+| Pipeline audit/redesign | `AGENTIC/_briefs/fleeting-pipeline-audit-2026-03-09.md` |
+| Web dashboard | `Websites/DKRHUB/fleeting-thoughts/` |
+| Pipeline Ledger | `Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md` |
+| Processed files | `FleetingThoughts/_processed/` |
+
+All paths relative to `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/`
