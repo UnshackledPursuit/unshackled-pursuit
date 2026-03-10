@@ -2,6 +2,7 @@
 
 > Full current-state audit of the Fleeting Thoughts pipeline. Safety net before any restructuring.
 > Checklist item: FT-PIPE-01 on `Websites/DKRHUB/unshackled-pursuit/docs/MASTER_CHECKLIST.md`
+> **Git-tracked backup:** `Websites/DKRHUB/unshackled-pursuit/docs/fleeting-pipeline-audit-2026-03-09.md` — sync after major updates.
 
 ## Why This Audit
 

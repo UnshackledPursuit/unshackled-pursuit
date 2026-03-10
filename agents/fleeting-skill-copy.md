@@ -236,5 +236,9 @@ Read that brief before making structural changes. It contains: two-stage process
 | Web dashboard | `Websites/DKRHUB/fleeting-thoughts/` |
 | Pipeline Ledger | `Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md` |
 | Processed files | `FleetingThoughts/_processed/` |
+| **BACKUP: This skill** | `Websites/DKRHUB/unshackled-pursuit/agents/fleeting-skill-copy.md` (git-tracked) |
+| **BACKUP: Audit brief** | `Websites/DKRHUB/unshackled-pursuit/docs/fleeting-pipeline-audit-2026-03-09.md` (git-tracked) |
+
+**Sync rule:** When updating this skill or the audit brief, copy to the DKR Hub backups and commit. These are the git-tracked safety copies.
 
 All paths relative to `~/Library/Mobile Documents/com~apple~CloudDocs/Assets/Learning/Apps/`
