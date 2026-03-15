@@ -33,15 +33,15 @@ export default function VoiceNotesPage() {
       {/* Hero */}
       <header className="flex flex-col items-center justify-center px-6 pt-20 pb-12 text-center">
         <Image
-          src="/icons/voicenotes.png"
-          alt="Voice Notes app icon"
+          src="/icons/airsticky.png"
+          alt="AirSticky app icon"
           width={128}
           height={128}
           className="rounded-[28px] shadow-2xl mb-6"
           priority
         />
 
-        <h1 className="text-4xl font-bold tracking-tight mb-2">Voice Notes</h1>
+        <h1 className="text-4xl font-bold tracking-tight mb-2">AirSticky</h1>
         <p className="text-zinc-400 text-lg mb-6">Spatial Sticky Notes for Apple Vision Pro</p>
         <p className="text-2xl font-light text-zinc-300 max-w-md">
           Speak. It stays.
@@ -96,7 +96,7 @@ export default function VoiceNotesPage() {
         <h2 className="text-2xl font-semibold text-center mb-10">How it works</h2>
         <div className="space-y-8">
           {[
-            'Launch Voice Notes. Your spatial canvas is ready.',
+            'Launch AirSticky. Your spatial canvas is ready.',
             'Tap record. Speak your thought. Text appears instantly.',
             'Your note floats right where you were looking.',
             'Create more notes. Color-code them. Spread them in your space.',
@@ -117,14 +117,14 @@ export default function VoiceNotesPage() {
         <h2 className="text-2xl font-semibold text-center mb-8">Frequently Asked Questions</h2>
         <div className="space-y-3">
           {[
-            { q: 'Do I need an internet connection?', a: 'No. All voice transcription happens on-device using Apple\'s Speech framework. Voice Notes works completely offline.' },
-            { q: 'Does Voice Notes collect any data?', a: 'No. Zero data collection. No analytics, no telemetry, no network calls. Everything stays on your Apple Vision Pro.' },
+            { q: 'Do I need an internet connection?', a: 'No. All voice transcription happens on-device using Apple\'s Speech framework. AirSticky works completely offline.' },
+            { q: 'Does AirSticky collect any data?', a: 'No. Zero data collection. No analytics, no telemetry, no network calls. Everything stays on your Apple Vision Pro.' },
             { q: 'How many notes can I create?', a: 'There is no hard limit. Create as many notes as you need. Each one floats in your space independently.' },
             { q: 'Do notes persist when I close the app?', a: 'Yes. Your notes are saved automatically and will be in the same position when you reopen the app.' },
             { q: 'Can I share notes with other apps?', a: 'Yes. Tap any note to access copy, share, and edit options. You can also paste text and links from other apps into your notes.' },
             { q: 'Does Family Sharing work?', a: 'Yes. One $2.99 purchase covers up to 6 family members through Apple\'s Family Sharing. No additional purchases needed.' },
-            { q: 'What devices does Voice Notes support?', a: 'Voice Notes is designed exclusively for Apple Vision Pro running visionOS 26.0 or later.' },
-            { q: 'Is there a subscription?', a: 'No. Voice Notes is a one-time purchase of $2.99. No subscriptions, no in-app purchases, no ads. Ever.' },
+            { q: 'What devices does AirSticky support?', a: 'AirSticky is designed exclusively for Apple Vision Pro running visionOS 26.0 or later.' },
+            { q: 'Is there a subscription?', a: 'No. AirSticky is a one-time purchase of $2.99. No subscriptions, no in-app purchases, no ads. Ever.' },
           ].map((item, i) => (
             <div key={i} className="border border-zinc-800 rounded-xl overflow-hidden">
               <button
@@ -155,12 +155,12 @@ export default function VoiceNotesPage() {
           {privacyOpen && (
             <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
               <p><strong className="text-zinc-300">Last updated:</strong> March 15, 2026</p>
-              <p>Voice Notes (&quot;the App&quot;) is developed and published by Unshackled Pursuit. This privacy policy describes how the App handles your data.</p>
-              <p><strong className="text-zinc-300">Data Collection:</strong> Voice Notes does not collect, store, transmit, or share any personal data. The App makes zero network calls. No analytics, telemetry, crash reporting, or usage tracking of any kind is implemented.</p>
+              <p>AirSticky (&quot;the App&quot;) is developed and published by Unshackled Pursuit. This privacy policy describes how the App handles your data.</p>
+              <p><strong className="text-zinc-300">Data Collection:</strong> AirSticky does not collect, store, transmit, or share any personal data. The App makes zero network calls. No analytics, telemetry, crash reporting, or usage tracking of any kind is implemented.</p>
               <p><strong className="text-zinc-300">Voice & Speech Data:</strong> All voice transcription is performed entirely on-device using Apple&apos;s built-in Speech framework. Audio is processed locally and never recorded, stored, or transmitted. No audio data leaves your device.</p>
               <p><strong className="text-zinc-300">Note Content:</strong> Notes you create are stored locally on your Apple Vision Pro. Note content is never transmitted to any server. If you delete the app, your notes are permanently removed.</p>
-              <p><strong className="text-zinc-300">Third-Party Services:</strong> Voice Notes does not integrate with any third-party services, SDKs, analytics platforms, or advertising networks.</p>
-              <p><strong className="text-zinc-300">Children&apos;s Privacy:</strong> Voice Notes does not collect data from any users, including children. The App is rated 4+ and is safe for all ages.</p>
+              <p><strong className="text-zinc-300">Third-Party Services:</strong> AirSticky does not integrate with any third-party services, SDKs, analytics platforms, or advertising networks.</p>
+              <p><strong className="text-zinc-300">Children&apos;s Privacy:</strong> AirSticky does not collect data from any users, including children. The App is rated 4+ and is safe for all ages.</p>
               <p><strong className="text-zinc-300">Changes:</strong> If this policy changes, the updated version will be posted on this page with a new date.</p>
               <p><strong className="text-zinc-300">Contact:</strong> For privacy questions, email support@unshackledpursuit.com.</p>
             </div>
@@ -180,11 +180,11 @@ export default function VoiceNotesPage() {
           </button>
           {supportOpen && (
             <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
-              <p>Having trouble with Voice Notes? Here are common solutions:</p>
-              <p><strong className="text-zinc-300">Microphone not working:</strong> Make sure you&apos;ve granted microphone permission to Voice Notes in Settings &gt; Privacy &amp; Security &gt; Microphone.</p>
+              <p>Having trouble with AirSticky? Here are common solutions:</p>
+              <p><strong className="text-zinc-300">Microphone not working:</strong> Make sure you&apos;ve granted microphone permission to AirSticky in Settings &gt; Privacy &amp; Security &gt; Microphone.</p>
               <p><strong className="text-zinc-300">Notes not saving:</strong> Notes save automatically. If you&apos;re experiencing issues, try closing and reopening the app. Notes are stored locally on your device.</p>
-              <p><strong className="text-zinc-300">Transcription accuracy:</strong> Voice Notes uses Apple&apos;s on-device Speech framework. Speak clearly and at a normal pace for best results. Background noise may affect accuracy.</p>
-              <p><strong className="text-zinc-300">Family Sharing:</strong> Family Sharing is automatic with paid apps. All family members in your Apple Family group can download Voice Notes at no additional cost.</p>
+              <p><strong className="text-zinc-300">Transcription accuracy:</strong> AirSticky uses Apple&apos;s on-device Speech framework. Speak clearly and at a normal pace for best results. Background noise may affect accuracy.</p>
+              <p><strong className="text-zinc-300">Family Sharing:</strong> Family Sharing is automatic with paid apps. All family members in your Apple Family group can download AirSticky at no additional cost.</p>
               <p><strong className="text-zinc-300">Still need help?</strong> Email us at <span className="text-zinc-300">support@unshackledpursuit.com</span> and we&apos;ll get back to you within 48 hours.</p>
             </div>
           )}
@@ -204,11 +204,11 @@ export default function VoiceNotesPage() {
           {termsOpen && (
             <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
               <p><strong className="text-zinc-300">Last updated:</strong> March 15, 2026</p>
-              <p>By downloading or using Voice Notes (&quot;the App&quot;), you agree to these terms.</p>
+              <p>By downloading or using AirSticky (&quot;the App&quot;), you agree to these terms.</p>
               <p><strong className="text-zinc-300">License:</strong> Unshackled Pursuit grants you a limited, non-exclusive, non-transferable license to use the App on any Apple device that you own or control, subject to the Apple Media Services Terms and Conditions.</p>
               <p><strong className="text-zinc-300">Acceptable Use:</strong> You may use the App for any lawful personal or commercial purpose. You may not reverse engineer, decompile, or disassemble the App.</p>
               <p><strong className="text-zinc-300">Content:</strong> You retain ownership of all notes and content you create within the App. Unshackled Pursuit does not access, collect, or claim any rights to your content.</p>
-              <p><strong className="text-zinc-300">Purchases:</strong> Voice Notes is a one-time paid purchase. No subscriptions or recurring charges. Refunds are handled through Apple per their standard refund policy.</p>
+              <p><strong className="text-zinc-300">Purchases:</strong> AirSticky is a one-time paid purchase. No subscriptions or recurring charges. Refunds are handled through Apple per their standard refund policy.</p>
               <p><strong className="text-zinc-300">Family Sharing:</strong> Purchases are shareable with up to 6 family members through Apple&apos;s Family Sharing feature at no additional cost.</p>
               <p><strong className="text-zinc-300">Disclaimer:</strong> The App is provided &quot;as is&quot; without warranty of any kind. Unshackled Pursuit is not liable for any loss of data or content created within the App.</p>
               <p><strong className="text-zinc-300">Apple EULA:</strong> This App is also subject to Apple&apos;s standard End User License Agreement (EULA) available at <span className="text-zinc-300">apple.com/legal/internet-services/itunes/dev/stdeula</span>.</p>
