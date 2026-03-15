@@ -162,7 +162,7 @@ export default function VoiceNotesPage() {
               <p><strong className="text-zinc-300">Third-Party Services:</strong> AirSticky does not integrate with any third-party services, SDKs, analytics platforms, or advertising networks.</p>
               <p><strong className="text-zinc-300">Children&apos;s Privacy:</strong> AirSticky does not collect data from any users, including children. The App is rated 4+ and is safe for all ages.</p>
               <p><strong className="text-zinc-300">Changes:</strong> If this policy changes, the updated version will be posted on this page with a new date.</p>
-              <p><strong className="text-zinc-300">Contact:</strong> For privacy questions, email support@unshackledpursuit.com.</p>
+              <p><strong className="text-zinc-300">Contact:</strong> For privacy questions, email info@unshackledpursuit.com.</p>
             </div>
           )}
         </div>
@@ -183,13 +183,13 @@ export default function VoiceNotesPage() {
               {/* Feedback + Support buttons — auto-tagged with app name */}
               <div className="flex gap-3 pb-2">
                 <a
-                  href="mailto:support@unshackledpursuit.com?subject=AirSticky%20Feedback&body=App%3A%20AirSticky%0AVersion%3A%201.0%0A%0A"
+                  href="mailto:info@unshackledpursuit.com?subject=AirSticky%20Feedback&body=App%3A%20AirSticky%0AVersion%3A%201.0%0A%0A"
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                 >
                   💬 Send Feedback
                 </a>
                 <a
-                  href="mailto:support@unshackledpursuit.com?subject=AirSticky%20Support%20Request&body=App%3A%20AirSticky%0AVersion%3A%201.0%0A%0ADescribe%20your%20issue%3A%0A"
+                  href="mailto:info@unshackledpursuit.com?subject=AirSticky%20Support%20Request&body=App%3A%20AirSticky%0AVersion%3A%201.0%0A%0ADescribe%20your%20issue%3A%0A"
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                 >
                   ✉️ Email Support
@@ -200,7 +200,7 @@ export default function VoiceNotesPage() {
               <p><strong className="text-zinc-300">Notes not saving:</strong> Notes save automatically. If you&apos;re experiencing issues, try closing and reopening the app. Notes are stored locally on your device.</p>
               <p><strong className="text-zinc-300">Transcription accuracy:</strong> AirSticky uses Apple&apos;s on-device Speech framework. Speak clearly and at a normal pace for best results. Background noise may affect accuracy.</p>
               <p><strong className="text-zinc-300">Family Sharing:</strong> Family Sharing is automatic with paid apps. All family members in your Apple Family group can download AirSticky at no additional cost.</p>
-              <p><strong className="text-zinc-300">Still need help?</strong> Email us at <span className="text-zinc-300">support@unshackledpursuit.com</span> and we&apos;ll get back to you within 48 hours.</p>
+              <p><strong className="text-zinc-300">Still need help?</strong> Email us at <span className="text-zinc-300">info@unshackledpursuit.com</span> and we&apos;ll get back to you within 48 hours.</p>
             </div>
           )}
         </div>
@@ -227,7 +227,7 @@ export default function VoiceNotesPage() {
               <p><strong className="text-zinc-300">Family Sharing:</strong> Purchases are shareable with up to 6 family members through Apple&apos;s Family Sharing feature at no additional cost.</p>
               <p><strong className="text-zinc-300">Disclaimer:</strong> The App is provided &quot;as is&quot; without warranty of any kind. Unshackled Pursuit is not liable for any loss of data or content created within the App.</p>
               <p><strong className="text-zinc-300">Apple EULA:</strong> This App is also subject to Apple&apos;s standard End User License Agreement (EULA) available at <span className="text-zinc-300">apple.com/legal/internet-services/itunes/dev/stdeula</span>.</p>
-              <p><strong className="text-zinc-300">Contact:</strong> For questions about these terms, email support@unshackledpursuit.com.</p>
+              <p><strong className="text-zinc-300">Contact:</strong> For questions about these terms, email info@unshackledpursuit.com.</p>
             </div>
           )}
         </div>
