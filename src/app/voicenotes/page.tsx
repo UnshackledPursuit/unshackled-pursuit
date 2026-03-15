@@ -1,12 +1,30 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 export default function VoiceNotesPage() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
+
+  // Auto-open and scroll to section if URL has #hash
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash === '#privacy') {
+      setPrivacyOpen(true);
+      setTimeout(() => document.getElementById('privacy')?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } else if (hash === '#support') {
+      setSupportOpen(true);
+      setTimeout(() => document.getElementById('support')?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } else if (hash === '#terms') {
+      setTermsOpen(true);
+      setTimeout(() => document.getElementById('terms')?.scrollIntoView({ behavior: 'smooth' }), 100);
+    } else if (hash === '#faq') {
+      setTimeout(() => document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' }), 100);
+    }
+  }, []);
 
   const toggleFaq = (i: number) => setFaqOpen(faqOpen === i ? null : i);
 
@@ -95,7 +113,7 @@ export default function VoiceNotesPage() {
       </section>
 
       {/* FAQ */}
-      <section className="px-6 py-12 max-w-2xl mx-auto w-full">
+      <section className="px-6 py-12 max-w-2xl mx-auto w-full" id="faq">
         <h2 className="text-2xl font-semibold text-center mb-8">Frequently Asked Questions</h2>
         <div className="space-y-3">
           {[
@@ -168,6 +186,33 @@ export default function VoiceNotesPage() {
               <p><strong className="text-zinc-300">Transcription accuracy:</strong> Voice Notes uses Apple&apos;s on-device Speech framework. Speak clearly and at a normal pace for best results. Background noise may affect accuracy.</p>
               <p><strong className="text-zinc-300">Family Sharing:</strong> Family Sharing is automatic with paid apps. All family members in your Apple Family group can download Voice Notes at no additional cost.</p>
               <p><strong className="text-zinc-300">Still need help?</strong> Email us at <span className="text-zinc-300">support@unshackledpursuit.com</span> and we&apos;ll get back to you within 48 hours.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Terms of Use (inline, expandable) */}
+      <section className="px-6 py-6 max-w-2xl mx-auto w-full" id="terms">
+        <div className="border border-zinc-800 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setTermsOpen(!termsOpen)}
+            className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-zinc-900 transition-colors"
+          >
+            <h2 className="text-xl font-semibold">Terms of Use</h2>
+            <span className="text-zinc-500 text-lg">{termsOpen ? '−' : '+'}</span>
+          </button>
+          {termsOpen && (
+            <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
+              <p><strong className="text-zinc-300">Last updated:</strong> March 15, 2026</p>
+              <p>By downloading or using Voice Notes (&quot;the App&quot;), you agree to these terms.</p>
+              <p><strong className="text-zinc-300">License:</strong> Unshackled Pursuit grants you a limited, non-exclusive, non-transferable license to use the App on any Apple device that you own or control, subject to the Apple Media Services Terms and Conditions.</p>
+              <p><strong className="text-zinc-300">Acceptable Use:</strong> You may use the App for any lawful personal or commercial purpose. You may not reverse engineer, decompile, or disassemble the App.</p>
+              <p><strong className="text-zinc-300">Content:</strong> You retain ownership of all notes and content you create within the App. Unshackled Pursuit does not access, collect, or claim any rights to your content.</p>
+              <p><strong className="text-zinc-300">Purchases:</strong> Voice Notes is a one-time paid purchase. No subscriptions or recurring charges. Refunds are handled through Apple per their standard refund policy.</p>
+              <p><strong className="text-zinc-300">Family Sharing:</strong> Purchases are shareable with up to 6 family members through Apple&apos;s Family Sharing feature at no additional cost.</p>
+              <p><strong className="text-zinc-300">Disclaimer:</strong> The App is provided &quot;as is&quot; without warranty of any kind. Unshackled Pursuit is not liable for any loss of data or content created within the App.</p>
+              <p><strong className="text-zinc-300">Apple EULA:</strong> This App is also subject to Apple&apos;s standard End User License Agreement (EULA) available at <span className="text-zinc-300">apple.com/legal/internet-services/itunes/dev/stdeula</span>.</p>
+              <p><strong className="text-zinc-300">Contact:</strong> For questions about these terms, email support@unshackledpursuit.com.</p>
             </div>
           )}
         </div>
