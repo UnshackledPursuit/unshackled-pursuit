@@ -183,13 +183,13 @@ export default function VoiceNotesPage() {
               {/* Feedback + Support buttons — auto-tagged with app name */}
               <div className="flex gap-3 pb-2">
                 <a
-                  href="mailto:info@unshackledpursuit.com?subject=AirSticky%20Feedback&body=App%3A%20AirSticky%0AVersion%3A%201.0%0A%0A"
+                  href="mailto:info@unshackledpursuit.com?subject=AirSticky%20Feedback&body=App%3A%20AirSticky%0A%0AWe'd%20love%20to%20hear%20from%20you!%20Any%20features%20you'd%20love%20to%20have%2C%20or%20anything%20on%20your%20mind%3A%0A%0A"
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                 >
                   💬 Send Feedback
                 </a>
                 <a
-                  href="mailto:info@unshackledpursuit.com?subject=AirSticky%20Support%20Request&body=App%3A%20AirSticky%0AVersion%3A%201.0%0A%0ADescribe%20your%20issue%3A%0A"
+                  href="mailto:info@unshackledpursuit.com?subject=AirSticky%20Support&body=App%3A%20AirSticky%0A%0AHow%20can%20we%20help%3F%20Let%20us%20know%20what's%20going%20on%20and%20we'll%20get%20back%20to%20you%3A%0A%0A"
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                 >
                   ✉️ Email Support
