@@ -196,6 +196,97 @@ If it only serves one pillar, it better be pillar 1 (revenue). If it serves zero
 
 ---
 
+## Research Moat Philosophy
+
+### The Core Principle
+
+**Anyone can build the app. Nobody else will read the papers.**
+
+The competitive advantage isn't code — it's the science underneath. A caption app with uniform word timing is a weekend project. A caption app where "the" passes at 0.7x speed and sentences decelerate at boundaries because Goldman-Eisler (1968), Klatt (1975), and Szarkowska (2018) proved that's how human speech works — that's a product nobody can casually replicate. Users feel the difference without knowing why. That's the moat.
+
+### The Szarkowska Principle
+
+Named after the eye-tracking researcher whose work proved 180 WPM is the cognitive load ceiling for on-screen text. The principle:
+
+**Bake obscure, rigorous science into consumer products so deeply that the research becomes invisible — the user just feels "this is better" without being able to articulate why. Competitors would have to read the same papers to match it, and they won't.**
+
+This applies beyond pacing. Every domain has decades of research that practitioners ignore:
+- Haptic feedback has psychophysics research on perception thresholds
+- Color has opponent-process theory and chromatic adaptation studies
+- Spatial layout has proxemics and personal space research
+- Audio has psychoacoustics and masking curves
+- Animation has perceptual studies on motion coherence
+
+The opportunity isn't building apps. It's applying science that nobody in the app ecosystem reads.
+
+### The Infrastructure That Makes This Work
+
+The knowledge DB is LIVE — not planned, built. `./search` CLI queries 482 indexed docs (7,287 chunks) across the entire ecosystem via FTS5. The nightly auto-indexer re-crawls and the curator agent surfaces connections automatically. Any session can run:
+
+```bash
+./search "cognitive load"        # finds Szarkowska, caption research, XR text studies
+./search "phrase-final"          # finds Klatt, prosody research, PacingEngine implementation
+./search "haptic perception"     # finds cross-project patterns you didn't know existed
+```
+
+This is how research compounds automatically. No manual linking needed — the indexer discovers new docs, the curator finds convergences, and `./search` makes it queryable from any terminal session. Semantic vector search (sqlite-vec + Ollama embeddings) extends this further once Ollama is running.
+
+### Case Study: PacingEngine.swift (Session 15)
+
+The UtterFlow pacing engine traces directly from citation to implementation:
+
+| Research | Finding | Implementation |
+|----------|---------|----------------|
+| Goldman-Eisler 1968 | 150 WPM conversational baseline | Default pace preset |
+| Klatt 1975 | Phrase-final lengthening (30-60% stretch) | Last word before period: 1.5x duration |
+| Szarkowska 2018 | 180 WPM cognitive load ceiling (eye-tracking) | Yellow warning at 180 WPM, red above |
+| Pellegrino et al. 2011 | Function words = 40% of text, 25% of time | 60+ function words at 0.7x speed |
+| BBC Guidelines | 160-180 WPM subtitle standard | Comfort score calibration |
+| ElevenLabs patterns | Breathing pauses every 5-8 words | Punctuation pause hierarchy |
+
+Anyone can copy the UI. They can't copy the research depth without doing the research.
+
+### Project Evaluation: The Research Filter
+
+Before committing to build anything, apply these three questions in addition to the four-pillar framework:
+
+**1. Does this connect to research we've already stacked?**
+The ecosystem has 40+ research docs, 50+ academic citations, and cross-project patterns. New projects that leverage existing depth compound faster than projects starting from zero. A new speech-related app leverages all the prosody research. A new visual app leverages the cognitive load research. A project with no connection to existing research starts cold.
+
+**2. Can we do one thing impossibly well — with science others won't read?**
+The bar isn't "can we build it" — anything can be built. The bar is "can we do it so well that users feel the difference without understanding it, and competitors can't match it without doing the same research?" If the answer is no, it's just another app.
+
+**3. Is it focused enough to be one thing, not five?**
+Depth beats breadth. An app that does one thing backed by research beats an app that does five things at surface level. Every feature added dilutes the research advantage. The pacing engine works because it's three layers deep on one problem, not three problems at one layer each.
+
+### Knowledge Compounding Strategy
+
+Research isn't a one-time investment — it compounds:
+
+```
+Session N:   Deep dive on speech prosody
+Session N+1: Pacing engine uses prosody research
+Session N+2: New app idea? Check: does it connect to prosody research?
+Session N+3: Marketing copy uses the same timing data
+Session N+4: Competitor tries to match — has to start from scratch
+```
+
+The more research stacks up, the higher the barrier for anyone else to match the product quality. This is the opposite of code — code depreciates, research appreciates. And with the knowledge DB live, this compounding is automatic — the nightly indexer discovers new research, the curator surfaces connections, and `./search` makes it queryable without knowing where to look.
+
+### Convergence Over Novelty
+
+The most valuable ideas aren't new — they're unique combinations of existing knowledge that nobody else would think to combine. The pacing engine combines:
+- 1960s psycholinguistics (Goldman-Eisler)
+- 1970s phonetics (Klatt)
+- 2018 eye-tracking cognitive science (Szarkowska)
+- Broadcasting industry standards (BBC, Netflix)
+- Commercial scriptwriting craft (Steve Jobs, teleprompter standards)
+- TTS system design (ElevenLabs, SSML)
+
+No single source gives you this. The convergence of all six is what makes it work. Future projects should look for similar convergences — where do multiple research streams intersect in a way nobody has combined before?
+
+---
+
 ## Key Dates & Triggers
 
 | Date/Trigger | Action |

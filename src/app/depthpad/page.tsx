@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
-export default function AirFormPage() {
+export default function DepthPadPage() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
@@ -32,15 +32,15 @@ export default function AirFormPage() {
       {/* Hero */}
       <header className="flex flex-col items-center justify-center px-6 pt-20 pb-12 text-center">
         <Image
-          src="/icons/airform.png"
-          alt="AirForm app icon"
+          src="/icons/depthpad.png"
+          alt="DepthPad app icon"
           width={128}
           height={128}
           className="rounded-[28px] shadow-2xl mb-6"
           priority
         />
 
-        <h1 className="text-4xl font-bold tracking-tight mb-2">AirForm</h1>
+        <h1 className="text-4xl font-bold tracking-tight mb-2">DepthPad</h1>
         <p className="text-zinc-400 text-lg mb-6">Spatial Canvas for Apple Vision Pro</p>
         <p className="text-2xl font-light text-zinc-300 max-w-md">
           Look. Pinch. Draw.
@@ -63,7 +63,7 @@ export default function AirFormPage() {
       {/* Description */}
       <section className="px-6 py-12 max-w-2xl mx-auto text-center">
         <p className="text-zinc-300 text-lg leading-relaxed">
-          AirForm turns your Apple Vision Pro into a spatial canvas. Look where you want to draw, pinch to create.
+          DepthPad turns your Apple Vision Pro into a spatial canvas. Look where you want to draw, pinch to create.
           Layer drawings at different depths, rotate your creation from every angle, and bask in what you&apos;ve made.
           From the makers of Spatialis.
         </p>
@@ -95,7 +95,7 @@ export default function AirFormPage() {
         <h2 className="text-2xl font-semibold text-center mb-10">How it works</h2>
         <div className="space-y-8">
           {[
-            'Launch AirForm. Your spatial canvas appears in front of you.',
+            'Launch DepthPad. Your spatial canvas appears in front of you.',
             'Pick a brush and color. Look where you want to draw. Pinch to create.',
             'Switch between vertical and flat planes. Adjust depth to layer drawings.',
             'Rotate your creation to draw from every angle. Use grid lines as guides.',
@@ -116,13 +116,13 @@ export default function AirFormPage() {
         <h2 className="text-2xl font-semibold text-center mb-8">Frequently Asked Questions</h2>
         <div className="space-y-3">
           {[
-            { q: 'How is AirForm different from Spatialis?', a: 'AirForm is the lightweight companion — 2D planes with depth layering, gaze + pinch input, clean grid canvas. Spatialis is the full studio with true 3D omnidirectional drawing, 17 brushes, 8 materials, USDZ export, and image import. Think of AirForm as the sketchpad, Spatialis as the studio.' },
+            { q: 'How is DepthPad different from Spatialis?', a: 'DepthPad is the lightweight companion — 2D planes with depth layering, gaze + pinch input, clean grid canvas. Spatialis is the full studio with true 3D omnidirectional drawing, 17 brushes, 8 materials, USDZ export, and image import. Think of DepthPad as the sketchpad, Spatialis as the studio.' },
             { q: 'Can I export my drawings?', a: 'Export is not available in v1.0. We\'re working on an export-to-Spatialis feature that will let you send your layered compositions to Spatialis for full 3D editing and USDZ export.' },
-            { q: 'How many drawings can I save?', a: 'AirForm supports 5 save slots. Each slot preserves your full canvas — all layers, colors, and depth positions.' },
-            { q: 'Does AirForm work alongside other apps?', a: 'Yes. AirForm uses a volumetric window, so it works alongside any other visionOS app. Draw while watching a movie, reading a document, or brainstorming with sticky notes.' },
+            { q: 'How many drawings can I save?', a: 'DepthPad supports 5 save slots. Each slot preserves your full canvas — all layers, colors, and depth positions.' },
+            { q: 'Does DepthPad work alongside other apps?', a: 'Yes. DepthPad uses a volumetric window, so it works alongside any other visionOS app. Draw while watching a movie, reading a document, or brainstorming with sticky notes.' },
             { q: 'What brushes are available?', a: 'Four brush types: Line (smooth strokes), Orb (dotted points), Calligraphy (pressure-sensitive style), and Ink Pen (fine detail). Each has four sizes: Fine, Medium, Thick, and Bold.' },
             { q: 'Does Family Sharing work?', a: 'Yes. One $4.99 purchase covers up to 6 family members through Apple\'s Family Sharing. No additional purchases needed.' },
-            { q: 'Is there a subscription?', a: 'No. AirForm is a one-time purchase. No subscriptions, no in-app purchases, no ads. Ever.' },
+            { q: 'Is there a subscription?', a: 'No. DepthPad is a one-time purchase. No subscriptions, no in-app purchases, no ads. Ever.' },
           ].map((item, i) => (
             <div key={i} className="border border-zinc-800 rounded-xl overflow-hidden">
               <button
@@ -153,11 +153,11 @@ export default function AirFormPage() {
           {privacyOpen && (
             <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
               <p><strong className="text-zinc-300">Last updated:</strong> March 15, 2026</p>
-              <p>AirForm (&quot;the App&quot;) is developed and published by Unshackled Pursuit. This privacy policy describes how the App handles your data.</p>
-              <p><strong className="text-zinc-300">Data Collection:</strong> AirForm does not collect, store, transmit, or share any personal data. The App makes zero network calls. No analytics, telemetry, crash reporting, or usage tracking of any kind is implemented.</p>
+              <p>DepthPad (&quot;the App&quot;) is developed and published by Unshackled Pursuit. This privacy policy describes how the App handles your data.</p>
+              <p><strong className="text-zinc-300">Data Collection:</strong> DepthPad does not collect, store, transmit, or share any personal data. The App makes zero network calls. No analytics, telemetry, crash reporting, or usage tracking of any kind is implemented.</p>
               <p><strong className="text-zinc-300">Drawing Data:</strong> All drawings and saved designs are stored locally on your Apple Vision Pro. Drawing data is never transmitted to any server. If you delete the app, your saved designs are permanently removed.</p>
-              <p><strong className="text-zinc-300">Third-Party Services:</strong> AirForm does not integrate with any third-party services, SDKs, analytics platforms, or advertising networks.</p>
-              <p><strong className="text-zinc-300">Children&apos;s Privacy:</strong> AirForm does not collect data from any users, including children. The App is rated 4+ and is safe for all ages.</p>
+              <p><strong className="text-zinc-300">Third-Party Services:</strong> DepthPad does not integrate with any third-party services, SDKs, analytics platforms, or advertising networks.</p>
+              <p><strong className="text-zinc-300">Children&apos;s Privacy:</strong> DepthPad does not collect data from any users, including children. The App is rated 4+ and is safe for all ages.</p>
               <p><strong className="text-zinc-300">Changes:</strong> If this policy changes, the updated version will be posted on this page with a new date.</p>
               <p><strong className="text-zinc-300">Contact:</strong> For privacy questions, email info@unshackledpursuit.com.</p>
             </div>
@@ -179,23 +179,23 @@ export default function AirFormPage() {
             <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
               <div className="flex gap-3 pb-2">
                 <a
-                  href="mailto:info@unshackledpursuit.com?subject=AirForm%20Feedback&body=App%3A%20AirForm%0A%0AWe'd%20love%20to%20hear%20from%20you!%20Any%20features%20you'd%20love%20to%20have%2C%20or%20anything%20on%20your%20mind%3A%0A%0A"
+                  href="mailto:info@unshackledpursuit.com?subject=DepthPad%20Feedback&body=App%3A%20DepthPad%0A%0AWe'd%20love%20to%20hear%20from%20you!%20Any%20features%20you'd%20love%20to%20have%2C%20or%20anything%20on%20your%20mind%3A%0A%0A"
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                 >
                   💬 Send Feedback
                 </a>
                 <a
-                  href="mailto:info@unshackledpursuit.com?subject=AirForm%20Support&body=App%3A%20AirForm%0A%0AHow%20can%20we%20help%3F%20Let%20us%20know%20what's%20going%20on%20and%20we'll%20get%20back%20to%20you%3A%0A%0A"
+                  href="mailto:info@unshackledpursuit.com?subject=DepthPad%20Support&body=App%3A%20DepthPad%0A%0AHow%20can%20we%20help%3F%20Let%20us%20know%20what's%20going%20on%20and%20we'll%20get%20back%20to%20you%3A%0A%0A"
                   className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
                 >
                   ✉️ Email Support
                 </a>
               </div>
-              <p>Having trouble with AirForm? Here are common solutions:</p>
-              <p><strong className="text-zinc-300">Drawing not responding:</strong> Make sure you&apos;re looking at the canvas area and using a pinch gesture. AirForm uses gaze-based input — look where you want to draw, then pinch.</p>
-              <p><strong className="text-zinc-300">Designs not saving:</strong> AirForm supports 5 save slots. Use the Save button on the right panel. Designs are stored locally on your device.</p>
+              <p>Having trouble with DepthPad? Here are common solutions:</p>
+              <p><strong className="text-zinc-300">Drawing not responding:</strong> Make sure you&apos;re looking at the canvas area and using a pinch gesture. DepthPad uses gaze-based input — look where you want to draw, then pinch.</p>
+              <p><strong className="text-zinc-300">Designs not saving:</strong> DepthPad supports 5 save slots. Use the Save button on the right panel. Designs are stored locally on your device.</p>
               <p><strong className="text-zinc-300">Canvas not visible:</strong> Try Reset View on the right panel. This returns the canvas to its default position and rotation.</p>
-              <p><strong className="text-zinc-300">Family Sharing:</strong> Family Sharing is automatic with paid apps. All family members in your Apple Family group can download AirForm at no additional cost.</p>
+              <p><strong className="text-zinc-300">Family Sharing:</strong> Family Sharing is automatic with paid apps. All family members in your Apple Family group can download DepthPad at no additional cost.</p>
               <p><strong className="text-zinc-300">Still need help?</strong> Email us at <span className="text-zinc-300">info@unshackledpursuit.com</span> and we&apos;ll get back to you within 48 hours.</p>
             </div>
           )}
@@ -215,11 +215,11 @@ export default function AirFormPage() {
           {termsOpen && (
             <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
               <p><strong className="text-zinc-300">Last updated:</strong> March 15, 2026</p>
-              <p>By downloading or using AirForm (&quot;the App&quot;), you agree to these terms.</p>
+              <p>By downloading or using DepthPad (&quot;the App&quot;), you agree to these terms.</p>
               <p><strong className="text-zinc-300">License:</strong> Unshackled Pursuit grants you a limited, non-exclusive, non-transferable license to use the App on any Apple device that you own or control, subject to the Apple Media Services Terms and Conditions.</p>
               <p><strong className="text-zinc-300">Acceptable Use:</strong> You may use the App for any lawful personal or commercial purpose. You may not reverse engineer, decompile, or disassemble the App.</p>
               <p><strong className="text-zinc-300">Content:</strong> You retain ownership of all drawings and designs you create within the App. Unshackled Pursuit does not access, collect, or claim any rights to your content.</p>
-              <p><strong className="text-zinc-300">Purchases:</strong> AirForm is a one-time paid purchase. No subscriptions or recurring charges. Refunds are handled through Apple per their standard refund policy.</p>
+              <p><strong className="text-zinc-300">Purchases:</strong> DepthPad is a one-time paid purchase. No subscriptions or recurring charges. Refunds are handled through Apple per their standard refund policy.</p>
               <p><strong className="text-zinc-300">Family Sharing:</strong> Purchases are shareable with up to 6 family members through Apple&apos;s Family Sharing feature at no additional cost.</p>
               <p><strong className="text-zinc-300">Disclaimer:</strong> The App is provided &quot;as is&quot; without warranty of any kind. Unshackled Pursuit is not liable for any loss of data or content created within the App.</p>
               <p><strong className="text-zinc-300">Apple EULA:</strong> This App is also subject to Apple&apos;s standard End User License Agreement (EULA) available at <span className="text-zinc-300">apple.com/legal/internet-services/itunes/dev/stdeula</span>.</p>

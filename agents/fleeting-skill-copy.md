@@ -65,17 +65,159 @@ curl -s -X POST "${SUPABASE_URL}/rest/v1/fleeting_thoughts" \
 
 | Tool | Where | What It Does |
 |------|-------|-------------|
+| **Dispatcher (Qwen 9B)** | `AGENTIC/agents/dispatcher.py` | Polls Supabase every 3 min. Qwen 3.5-9B triages items, retries failed agents, generates MLX fallback briefs. Phase 3 dry-run (Mar 12). |
+| MLX inference wrapper | `AGENTIC/agents/mlx-inference.py` | CLI for local model inference (Qwen 9B, MedGemma 4B). RAM guard, Claude guard, timeout. |
 | Process queue agent | `AGENTIC/agents/process-queue.sh` | Auto-processes iPhone podcast captures (every 30 min, launchd) |
 | User-action handler | `AGENTIC/agents/process-user-actions.sh` | Handles Dig Deeper/Implement from FT app (every 30 min, launchd) |
 | Intelligence POST | `AGENTIC/agents/intelligence-post.sh` | POSTs briefs/intelligence to Supabase pipeline |
 | Morning digest | `AGENTIC/agents/prompts/morning-digest.md` | Daily summary of overnight agent output |
 | Knowledge DB search | `AGENTIC/search` | FTS5 + vector search across ecosystem docs |
-| Web dashboard | `fleetingthoughts.app` | Board, agents, media queue, analytics |
-| iOS app | Share Extension + direct capture → Supabase |
+| Web dashboard | `fleetingthoughts.app` | Board, agents, media queue, analytics, **Intel Report** |
+| Intel Report | `fleetingthoughts.app/intel-report` | Interactive intel review — structured cards, ThemeAnalysis, AI Council, archive with undo |
+| iOS app | Share Extension + direct capture → Supabase (priority + project chips) |
 | Mac app | Hotkey capture, local only |
 | This skill (`/fleeting`) | Manual triage when invoked |
 
 **Not running (archived Gen 1):** `folder-watcher.ts`, `process-inbox.ts`, `process-thoughts.ts` in `Websites/.../agents/`. These are old Node scripts. Ignore them.
+
+---
+
+## Dispatcher Integration (Qwen 3.5-9B + MLX)
+
+The dispatcher (`AGENTIC/agents/dispatcher.py`) runs every 3 minutes via launchd. It uses Qwen 3.5-9B locally via MLX to pre-triage items. This skill and the dispatcher work TOGETHER, not in competition.
+
+**Current status (Mar 12):** Phase 3 dry-run. Dispatcher logs decisions to `/tmp/dispatcher-decisions.jsonl` but does NOT execute. Review these daily.
+
+**How they collaborate:**
+
+| Stage | Who Does It | What Happens |
+|-------|------------|-------------|
+| Capture | User via web/iOS/Mac | User sets priority + project + modifiers via chips. Hits Supabase. |
+| Pre-triage | Dispatcher (Qwen 9B) | Classifies category, validates routing, proposes tags. Logs decision. Does NOT change status. |
+| Full triage | This skill (Claude) OR dispatcher live mode | Reads pre-triage decision, confirms or overrides, applies status change + ai_analysis. |
+| Disagreement | This skill logs correction | If overriding Qwen's decision, log `corrected_from` in breadcrumb. This is the highest-value training signal. |
+
+**When running /fleeting alongside dispatcher:**
+1. Check `/tmp/dispatcher-decisions.jsonl` for recent triage proposals
+2. If dispatcher already triaged an item, review its decision before overriding
+3. Log disagreements with `corrected_from` field in breadcrumb (see below)
+4. Items the dispatcher marked as "needs-claude" should get priority processing
+
+**Dispatcher can trigger Claude sessions:** When live (Phase 4), the dispatcher will `launchctl kickstart` agents for retries and can launch `claude -p` in tmux for complex items. The skill doesn't need to know about this — it's infrastructure.
+
+**Enhanced breadcrumb format (when overriding dispatcher):**
+```jsonl
+{"ts":"...","item_id":"...","content_preview":"...","decision":"route-to-intel","corrected_from":{"qwen_decision":"archive","qwen_confidence":"medium","qwen_reasoning":"Looks like status update"},"reasoning":"Actually contains actionable CVE data — Qwen missed the security signal","confidence":"high"}
+```
+
+The `corrected_from` field is the highest-value training signal. It teaches the model exactly where its judgment failed and why.
+
+---
+
+## Capture Form Metadata (fleetingthoughts.app)
+
+The web capture bar sends structured metadata that this skill should use during triage:
+
+**Priority chips (user-set, trust these):** `high`, `medium`, `low`, `someday`
+- If user set priority at capture, DO NOT override it. Log it as-is in breadcrumb.
+- If no priority set, default to `medium`.
+
+**Project chips:** `agentic`, `media`, `health`, `fleeting-thoughts`, `spatialis`, `waypointhub`, `baoding-orbs`, `utterflow`
+- User-set project is ground truth for routing.
+- Items captured with a project chip should route to that project's context.
+
+**Modifier chips (planned):** `research`, `ideas`, `feedback`
+- `research` — triggers deep-research-loop or AI Council investigation
+- `ideas` — triggers quick spec generation, archives for later review
+- `feedback` — routes to prompt improvement pipeline (correction → breadcrumb)
+
+**Where to find this data:** Check the item's `metadata` JSONB field and `tags` array. Priority is a top-level field. Project may be in tags or metadata.
+
+---
+
+## Daily Pipeline Improvement Process (MANDATORY)
+
+Every pipeline/fleeting session MUST:
+1. **Read previous day's improvement doc** — `AGENTIC/_briefs/intel-pipeline-improvements-YYYY-MM-DD.md`
+2. **Skim the last week** of improvement docs for patterns and unresolved items
+3. **Process with quality** — depth over volume. AI Council for theme clusters with 3+ items.
+4. **Create/update today's improvement doc** — what worked, what didn't, quality issues, recommendations
+5. **Update CLAUDE.md** if pipeline architecture changes were made
+
+---
+
+## Intel Report & API (LIVE — fleetingthoughts.app/intel-report)
+
+The Intel Report is the primary user-facing review surface. It renders all `status=intel` items with structured analysis, theme grouping, and interactive actions.
+
+**Server routes (`/api/intel`):**
+- `GET` — fetches `status=intel` items (service key, bypasses RLS, limit 200)
+- `PATCH` — single item update (`{id, status, notes, append_notes}`) or bulk archive (`{bulk_archive: true, ids: [...]}`)
+- `POST` — create new items (AI Council research requests, agent-generated items)
+
+**How it renders:**
+1. Items categorized: Podcasts → Research → Intelligence → Tools → Links → X Links → General
+2. Categories with >4 items get theme subclustering (9 theme patterns)
+3. **ThemeAnalysis** per group: extracts Key Developments, Relevance to Us, Recommended Actions from items' structured `ai_analysis`
+4. **Intelligence Briefing** at top: per-theme narrative with WHY IT MATTERS insights
+5. Per-card actions: Comment → Agent Queue, Copy Markdown, Archive with undo
+6. AI Council button per theme: POSTs structured research request to agent_queue
+7. Collapse All / Expand All with lifted state
+
+**ThemeAnalysis requires structured ai_analysis.** Items without ALL CAPS headers (WHAT IT IS, WHY IT MATTERS, ACTION ITEMS) will show "No structured analysis available." Processing MUST produce these headers.
+
+---
+
+## Structured Analysis Format (REQUIRED for all intel items)
+
+Every item moved to `status=intel` MUST have `ai_analysis` with ALL CAPS section headers:
+
+```
+[Topic Title]
+
+WHAT IT IS:
+[2-3 sentences describing the item and context]
+
+KEY CLAIMS:
+- [claim 1 with attribution]
+- [claim 2]
+
+WHY IT MATTERS TO US:
+[2-3 sentences connecting to DKR ecosystem — apps, pipeline, strategy]
+
+ACTION ITEMS:
+1. [Specific action]
+2. [Specific action]
+
+SOURCE: [URL, author, date]
+```
+
+**Minimum 220 chars.** Thin summaries break ThemeAnalysis and provide no value to the user.
+
+---
+
+## Intent Classification (CRITICAL for iphone-dictation)
+
+When `source=iphone-dictation`, classify intent FIRST:
+
+| Intent | Example | Route |
+|--------|---------|-------|
+| **Data to catalog** | "Interesting article about AI agents" | Process → intel |
+| **Research request** | "Research terminal access from iPhone" | Deep research → intel (tagged `research`) |
+| **Feature request** | "Add comments to share extension" | Process as feature request → intel (tagged `feature-request`) |
+| **Strategic directive** | "Monitor Big Tech agentic moves" | Process with strategic framing → intel (tagged `strategic`) |
+| **Operational complaint** | "Analytics gaps, agents not seeing data" | Process with action items → intel (tagged `operations`) |
+
+**Instructions need EXECUTION, not just routing.** "Research this" means do the research and write findings. "Build this" means evaluate feasibility. "Figure out how" means investigate options.
+
+---
+
+## Project Tagging
+
+Items should be tagged with relevant project names during processing:
+`spatialis`, `waypointhub`, `baoding-orbs`, `utterflow`, `fleeting-thoughts`, `agentic`, `valerian`, `media`
+
+Parse user dictations and content for project context. Multiple projects are fine.
 
 ---
 
@@ -205,6 +347,38 @@ Every processed item MUST be moved out of inbox. Classify as:
 
 ---
 
+## Structured Decision Breadcrumbs (MANDATORY)
+
+Every triage decision the orchestrator makes MUST leave a structured breadcrumb. These are training data for local models (Qwen 3.5 via MLX) that will eventually handle triage autonomously.
+
+**When processing ANY item, append a decision record to `AGENTIC/_briefs/triage-log-YYYY-MM-DD.jsonl`:**
+
+```jsonl
+{"ts":"2026-03-11T18:30:00Z","item_id":"abc12345","content_preview":"Research terminal access from iPhone","source":"iphone-dictation","decision":"route-to-intel","tags_applied":["research","agentic","infrastructure"],"project":"agentic","priority":"medium","confidence":"high","reasoning":"Infrastructure research request — needs investigation, not just routing","escalated_to":null}
+```
+
+**Fields (all required):**
+
+| Field | What | Example |
+|-------|------|---------|
+| `ts` | ISO timestamp | `2026-03-11T18:30:00Z` |
+| `item_id` | First 8 chars of Supabase ID | `abc12345` |
+| `content_preview` | First 80 chars of content | `Research terminal access...` |
+| `source` | Capture source | `iphone-dictation`, `agent`, `dashboard-capture` |
+| `decision` | What you decided | `route-to-intel`, `archive`, `agent-queue`, `route-to-project` |
+| `tags_applied` | Tags you set | `["research","agentic"]` |
+| `project` | Project assignment | `agentic`, `spatialis`, `none` |
+| `priority` | Priority you assigned | `high`, `medium`, `low` |
+| `confidence` | How confident in this routing | `high`, `medium`, `low` |
+| `reasoning` | WHY you made this decision (1 sentence) | `Matches BDG-90 in Baoding checklist` |
+| `escalated_to` | If handed to Claude/agent | `claude`, `process-queue`, `null` |
+
+**Why this matters:** These records teach local models what good triage looks like. The reasoning field is the most valuable — it's the judgment a smaller model needs to learn. Without it, the model can only mimic patterns. With it, it can learn your decision framework.
+
+**Retroactive breadcrumbs:** A dedicated session can query Supabase for all historical items with their status transitions and generate breadcrumbs retroactively. The data exists — every item has `captured_at`, `status`, `tags`, `ai_analysis`, `routed_to`, `source`. A focused orchestrator pass can reconstruct the decision trail for hundreds of past items and bulk-write the training log.
+
+---
+
 ## Pipeline Ledger
 
 **Location:** `Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md`
@@ -231,8 +405,12 @@ Read that brief before making structural changes. It contains: two-stage process
 | This skill | `skills/fleeting/SKILL.md` |
 | AGENTIC agents | `AGENTIC/agents/` |
 | Intelligence briefs | `AGENTIC/_briefs/` |
+| **Pipeline improvements (daily)** | `AGENTIC/_briefs/intel-pipeline-improvements-YYYY-MM-DD.md` |
 | Person of Interest | `AGENTIC/PERSON_OF_INTEREST.md` |
 | Pipeline audit/redesign | `AGENTIC/_briefs/fleeting-pipeline-audit-2026-03-09.md` |
+| **Intel Report source** | `Websites/DKRHUB/fleeting-thoughts/src/app/intel-report/page.tsx` |
+| **Intel API route** | `Websites/DKRHUB/fleeting-thoughts/src/app/api/intel/route.ts` |
+| **Dashboard CLAUDE.md** | `Websites/DKRHUB/fleeting-thoughts/CLAUDE.md` |
 | Web dashboard | `Websites/DKRHUB/fleeting-thoughts/` |
 | Pipeline Ledger | `Websites/DKRHUB/unshackled-pursuit/docs/PIPELINE_LEDGER.md` |
 | Processed files | `FleetingThoughts/_processed/` |

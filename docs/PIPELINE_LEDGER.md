@@ -421,3 +421,273 @@ Each session that processes thoughts appends entries to the table below. Entries
 - Folder watcher keyword matching is imprecise — Local AI Stack got assigned to WaypointHub instead of Fleeting Thoughts. The watcher is useful for ingestion but routing needs manual correction.
 - X links are the lowest-value items in the pipeline. Most are curiosity/awareness. The visionOS community contacts (@paulhamilton8, @einarjohnson_xr) were the hidden value — routed to Network project.
 - Karpathy post validates our exact architecture. "Ascending layers of abstraction to set up orchestrator claws with tools, memory, and instructions" = what we built with Conductor/Ralph/Explorer + MEMORY.md + BUILD_LEARNINGS.md.
+
+### Session: 2026-02-28 — Pipeline Discipline + Inbox Clear
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-02-28 | `04e97eb3` | X Developer free plan details | merged → archived | Fleeting Thoughts | Part of 5-item Grok/X dev cluster. Consolidated into 9c738ea4. | Archived — merged. |
+| 2026-02-28 | `672e4f41` | Grok bookmark automation feasibility | merged → archived | Fleeting Thoughts | Same cluster. | Archived — merged. |
+| 2026-02-28 | `11bc0392` | Automation cost breakdown | merged → archived | Fleeting Thoughts | Same cluster. | Archived — merged. |
+| 2026-02-28 | `32b051ae` | Grok Premium Plus advantages | merged → archived | Fleeting Thoughts | Same cluster. | Archived — merged. |
+| 2026-02-28 | `a9ba181e` | Grok bookmark automation plan | merged → archived | Fleeting Thoughts | Same cluster. | Archived — merged. |
+| 2026-02-28 | `9c738ea4` | X Dev + Grok Bookmark Automation (CONSOLIDATED) | created → routed | Fleeting Thoughts | Merged 5 Grok research items into one reference. Directly relevant to X dev setup. | Routed — pipeline automation reference. |
+| 2026-02-28 | `d6366a07` | Zack Shapiro Claude-native law firm article | routed | Unshackled Pursuit | AI workflow reference/inspiration. Not a build, not a feature. | Routed — reference. |
+| 2026-02-28 | `90dc392a` | Zack Shapiro URL (duplicate) | archived | none | Duplicate of d6366a07. | Archived. |
+| 2026-02-28 | `2f6c8af9` | Thariq (Anthropic) Claude Code tips | routed | Fleeting Thoughts | Workflow improvement reference from Claude Code engineer. | Routed — workflow reference. |
+| 2026-02-28 | `71a75e2c` | Boris Cherny Claude Code features | routed | Fleeting Thoughts | Upcoming Claude Code features. Tooling awareness. | Routed — tooling. |
+| 2026-02-28 | `157a5c25` | Claude Code usage tips blog | routed | Fleeting Thoughts | Blog post on coding agents. Workflow reference. | Routed — reference. |
+| 2026-02-28 | `2babe308` | YOLO prompt — nightly wild ideas at Codex | routed | Unshackled Pursuit | Strategic direction — autonomous overnight builds concept. | Routed — strategic. |
+| 2026-02-28 | `1fc8f432` | OpenArm hardware (robotic arm CAD) | routed | none | Curiosity — 3D printer + robotics. No project tie. | Routed — curiosity, low priority. |
+| 2026-02-28 | `24b92191` | josh_garrett_kc X post (URL only) | archived | none | URL-only, zero context. Cannot determine value. | Archived. |
+| 2026-02-28 | `6da9a1c0` | jordankutzer VP 3-agent demo | routed | none | Curiosity — visionOS reference for spatial AI interaction. | Routed — curiosity. |
+| 2026-02-28 | `ee50cee7` | WaypointHub 2.0 X Article | routed | WaypointHub | Launch content task. Tied to v2.0 drip strategy. | Routed — content. |
+| 2026-02-28 | `5009e37a` | X Live Broadcast from Vision Pro | routed | Unshackled Pursuit | Content strategy — unique differentiator. Nobody doing VP live streams. | Routed — content strategy. |
+| 2026-02-28 | `275e83c3` | CaptionFlow live overlay feature | routed | Construct Ideas | Buildable feature for CaptionFlow. Animated text during broadcasts. | Routed — CaptionFlow feature. |
+| 2026-02-28 | `8ccbbe9e` | "Why use apps when AI can do it?" | routed | Unshackled Pursuit | Existential strategic question. Already answered: spatial experiences. | Routed — strategic. |
+| 2026-02-28 | `7a072ac2` | Gemini API free tier research | routed | Fleeting Thoughts | Pipeline tooling — free embeddings, vision capabilities. | Routed — pipeline tooling. |
+| 2026-02-28 | `57562162` | Apple Intelligence integration | routed | Unshackled Pursuit | Ecosystem-level research. Affects all apps. | Routed — ecosystem. |
+| 2026-02-28 | `4086aed7` | WWDC / Apple releases prep | routed | Unshackled Pursuit | Ecosystem-level. All apps need readiness. | Routed — ecosystem. |
+| 2026-02-28 | `2350680d` | Gaussian splats + ML SHARP | routed | Spatialis | 3D rendering reference. Not-Ralph — user creative control. | Routed — 3D reference. |
+| 2026-02-28 | `4d584ea4` | Gemma 3 local AI evaluation | routed | Fleeting Thoughts | Pipeline tooling — local AI comparison. | Routed — pipeline tooling. |
+| 2026-02-28 | `0f5952ce` | Qwen 3.5 MoE model evaluation | routed | Fleeting Thoughts | Pipeline tooling — local AI apprentice candidate. | Routed — pipeline tooling. |
+| 2026-02-28 | `b3f3c3f2` | Analytics dashboard | routed | Unshackled Pursuit | Build at unshackledpursuit.com. ASC + X analytics. | Routed — dashboard. |
+| 2026-02-28 | `52fad117` | Vector Knowledge Graph — sovereign local DB | created → routed | Fleeting Thoughts | Strategic infrastructure upgrade. Solves context-loading ceiling. | Routed — infrastructure. |
+| 2026-02-28 | `b49cd0e9` | Security Audit — Claude Code scan | created → routed | Unshackled Pursuit | Ongoing security monitoring. Next.js + Supabase stack. | Routed — security. |
+| 2026-02-28 | `22b781d2` | Spatial Knowledge Explorer — visionOS app | created → routed | Construct Ideas | New app concept — Minority Report-style knowledge graph. Build for self, then ship. | Routed — app concept. |
+| 2026-02-28 | `db408f0d` | post-bridge.com (duplicate) | archived | none | Duplicate of 960c428a. | Archived. |
+| 2026-02-28 | `960c428a` | post-bridge.com / @jackfriks | routed | Unshackled Pursuit | Competitor/inspiration — API + bots ecosystem. | Routed — competitor research. |
+| 2026-02-28 | `2cbc548f` | Splatial.com review | routed | Spatialis | Competitor website review. Fellow VP developer. | Routed — competitor research. |
+
+**Session stats:** 30 items processed. 3 new thoughts created (vector DB, security, spatial app). 5 merged into 1. 8 archived (5 merged originals, 2 duplicates, 1 URL-only noise). 0 inbox remaining. 1 processing item remains (X Growth Strategy — needs graduation).
+
+**Process improvement:** Added "Processing Discipline" section to /fleeting skill. Key rules: context-first (not inbox-zero), read full content before categorizing, reference Three Funnels, never use projects as catch-alls. Added to MEMORY.md Confirmed Patterns. Also added documentation-must-stay-lean principle to User Preferences.
+
+**Learning notes:**
+- First pass attempted lazy batch-categorization: dumped 14 URL-only items into Construct Ideas without reading them. Construct Ideas is an app incubator, not a reference dump. Caught by user, corrected on second pass with full content analysis.
+- The 54-minute correction loop directly motivated the vector DB thought — semantic search would have surfaced relevant context instantly instead of requiring manual file reading.
+- Grok bookmark automation cluster (5 items) demonstrates why merge is important — 5 overlapping Grok conversations about the same topic create noise, not signal.
+
+### Session: 2026-03-02 — InfraScope Project Creation + Remote Control Setup
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-03-02 | `972ae15b` | Digital infrastructure mapping + Gaussian splatting + spatial modeling tool | created → routed | Construct Ideas | New project concept: mobile-first web app for uploading blueprints, overlaying data layers, tracing infrastructure connections, building toward 3D with Gaussian splats. Field technician use case. Research-heavy — Gaussian splats, Three.js, PDF processing, graph data all need investigation. | SPEC.md created at `Construct/Ideas/InfraScope/SPEC.md`. Codename: InfraScope. Research phase first, then phased build. |
+
+**Session stats:** 1 item processed. New project created (InfraScope). Remote control session activated for mobile pipeline access.
+
+| 2026-03-02 | b01ae241 | Knowledge Capture Pipeline + Mac dictation app (Wispr Flow replacement) | created | Construct Ideas | Ecosystem-level infrastructure — two input streams (voice + session logs) feed extraction pipeline for knowledge nuggets. Personal Mac app captures voice data. Separate from UtterFlow. | Inbox — high priority, route after UtterFlow ships |
+
+### Session: 2026-03-04 — App-Specific Triage (16 items processed)
+
+Focus: Surface all app-relevant inbox items, verify against master checklists, route or close.
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-03-04 | `ad4ff593` | ASC availability toggle — UtterFlow "Removed from App Store" explanation | inbox → done | UtterFlow | Explained the ASC availability vs version status distinction. Issue resolved by separate agent. Pattern added to MEMORY.md and ASC KNOWLEDGE_BASE.md. | Done — operational issue resolved. |
+| 2026-03-04 | `a9aa19ed` | Script/timeline editing for UtterFlow | inbox → done | UtterFlow | Already fully documented in Phase J (PJ-01 through PJ-04) + dedicated SCRIPT_TIMELINE_SPEC.md. 48 task IDs. v1.1. | Done — already in checklist. |
+| 2026-03-04 | `aa117331` | Export transcriptions — "private, instant" | inbox → done | UtterFlow | Already documented: SRT/Subtitle Export (SRT, VTT, FCPXML) in DIRECTION_IDEAS.md. Strong Pro feature v1.1+. | Done — already in checklist. |
+| 2026-03-04 | `caaf8e29` | XML data export for media players | inbox → done | UtterFlow | FCPXML format explicitly listed in SRT export feature. Covers XML timeline data for media players. v1.1+. | Done — already in checklist. |
+| 2026-03-04 | `5f1acecb` | Multi-speaker live captions via diarization | inbox → done | UtterFlow | Already documented in DIRECTION_IDEAS.md. HIGH-risk, correctly deferred to v2.0+. Also PI-12 in Phase I. | Done — already in checklist. |
+| 2026-03-04 | `d3951063` | AirPods dictation / voice capture on the go | inbox → processing | Fleeting Thoughts (primary) + UtterFlow (secondary) | BOTH apps. User wants this for Fleeting Thoughts iPhone app first (personal pipeline). UtterFlow has PI-15 (AirPods) + iPhone app planned separately. FT iOS already has voice capture built. | Processing — dual-project item. FT primary. |
+| 2026-03-04 | `2c8acb52` | @be_inaudible repost + Brian Roemmele marketing angle | inbox → routed | Unshackled Pursuit | Marketing follow-up for content calendar. Not urgent. Route to Media marketing backlog. | Routed — Media/ marketing backlog. |
+| 2026-03-04 | `f1f47991` | Spatialis depth overwriting strokes fix | inbox → done | Spatialis | Already documented as DT20-13. HIGH priority v1.4. .postPass fix solved z-fighting but introduced newest-stroke-on-top behavior. Known, tracked. | Done — already in checklist as DT20-13. |
+| 2026-03-04 | `96daa846` | Dual marker mode + SharePlay for Spatialis | inbox → done | Spatialis | Already documented: Dual marker = FUT-1 (HIGH future). SharePlay = FUT-53 (HIGH v2.0+, requires FUT-20 + FUT-1). | Done — already in checklist. |
+| 2026-03-04 | `ba927c55` | Family Sharing IAP — user feedback | inbox → routed | Spatialis (primary) + Baoding Orbs (secondary) | User promised Family Sharing for next update. ASC setting, not code change. NOT documented in Spatialis checklist yet — needs adding. Baoding Orbs = low priority future. | Routed — ASC agent handoff. |
+| 2026-03-04 | `79c07bd5` | WaypointHub allow links or apps, default launch apps | inbox → done | WaypointHub | Already documented as v1.4-7 (App vs Browser toggle) and v1.4-9 (Universal links). Spatialis direct launch already works. v1.5+. | Done — already in checklist. |
+| 2026-03-04 | `ff9eff2b` | WaypointHub smart detect app vs web fallback | inbox → done | WaypointHub | Duplicate of 79c07bd5. Same feature. v1.4-7 and v1.4-9. | Done — duplicate, already in checklist. |
+| 2026-03-04 | `110acb9c` | PNG sketch mode depth/backplate fix | inbox → routed | WaypointHub | NOT documented in WaypointHub checklist. Taps pass through transparent window. Needs depth backplate similar to Spatialis. Low priority future fix. | Routed — needs adding to MASTER_CHECKLIST. |
+| 2026-03-04 | `7421dedb` | WaypointHub v2.0 release notes draft | inbox → archived | WaypointHub | Already shipped. Reference only. | Archived. |
+| 2026-03-04 | `1ca4973b` | Dynamic Island + iPhone design research | inbox → routed | Fleeting Thoughts | Deep research for Dynamic Island, Metal, SwiftUI on iPhone/Mac. FT iOS already has DI Live Activity built — this is deeper polish research. | Routed — FT iOS polish. |
+| 2026-03-04 | `af3f1f85` | Dictation to fleeting thought + stickys | inbox → routed | Fleeting Thoughts | Voice → thought → spatial sticky note. Capture mechanism = FT. Display = spatial stickys concept (e7b6333b). Could integrate with WaypointHub dictation mini-app. | Routed — FT feature. |
+
+**Session stats:** 16 items processed. 9 marked done (already documented in project checklists). 4 routed (need checklist additions or handoff). 1 archived (shipped reference). 1 processing (dual-project). 1 marketing routed.
+
+**Key findings:**
+- Inbox had significant "already addressed" debt — items captured as voice notes that repeated features already documented in master checklists. Root cause: rapid development sessions where features were discussed, documented in checklists, but the originating fleeting thought was never closed out.
+- UtterFlow vs Fleeting Thoughts overlap confirmed: AirPods dictation is FT-primary (thought capture pipeline), UtterFlow handles the live transcription display side. Export transcriptions applies to both but is documented under UtterFlow.
+- Two items need checklist additions: Family Sharing IAP (Spatialis), PNG sketch depth (WaypointHub).
+- 47 inbox items remain (infra, new ideas, reference links, general). Deferred — not app-specific.
+
+### Session: 2026-03-06 — Research/Reference Cleanup + Strategic Context Established
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-03-06 | `698f8e12` | Test intelligence brief | archived | none | Test pipeline connectivity item. No value. | Archived — test data. |
+| 2026-03-06 | `edb08fc9` | TestFlight beta link | archived | none | TestFlight URL bookmark. No actionable content. | Archived — test data. |
+| 2026-03-06 | `4016610e` | SharePlay karaoke for Vision Pro | archived | Construct Ideas | Fun concept but not a personal passion. Parked for potential future build or agent experiment. | CI-18 in MASTER_CHECKLIST.md (Marinating section). |
+| 2026-03-06 | `b02d4723` | Highest signal podcasts discussion | archived | none | Already actioned — RSS feeds set up for Moonshots, Lenny, Jordi, Pompliano. Podcast registry in AGENTIC/README.md. | Archived — already implemented. |
+| 2026-03-06 | `cafe7ca1` | Bird Watcher AI (Tapo + Pi 5 + YOLO) | archived | Construct Ideas | Interesting project, hardware owned, not ready to build yet. Could combine with CI-20. | CI-19 in MASTER_CHECKLIST.md (Marinating section). |
+| 2026-03-06 | `6911b40a` | VP spatial command center (camera feeds + YOLO) | archived | Construct Ideas | Builds on Bird Watcher + ForgeView. Multiple camera feeds as floating VP panels. Not ready to build. | CI-20 in MASTER_CHECKLIST.md (Marinating section). |
+| 2026-03-06 | `32b27b5e` | ConfAdapt multi-token prediction (7x speedup) | archived | none | Microsoft research paper. Strategic awareness for on-device AI work. No direct action. | Added to AGENTIC/strategic-context.md. |
+| 2026-03-06 | `53c76a78` | The Great Transition (Daniel Miessler) | archived | none | Macro-trends article: Products→APIs, consumer disappearance, enterprise as graph. Strategic awareness. | Added to AGENTIC/strategic-context.md. First entry in new file. |
+
+**Session stats:** 8 items processed. 2 test data archived. 3 app ideas parked in Marinating section (CI-18/19/20). 1 already-actioned archived. 2 strategic awareness items → new `AGENTIC/strategic-context.md`.
+
+**Process improvement:** Created `AGENTIC/strategic-context.md` as the destination for "interesting but not actionable" macro-trend observations. Previously these had no home — too big for Supabase archive, not buildable enough for MASTER_CHECKLIST, not research-specific enough for _briefs/. Now the pipeline has three graduation paths: features → MASTER_CHECKLIST, intelligence → _briefs/, strategic awareness → strategic-context.md.
+
+---
+
+### Session: 2026-03-06 (evening) — FT Architecture Cleanup
+
+**Agent:** FT app agent (this session also did architecture pivot, CLAUDE.md rewrite, git commit/push)
+**Focus:** Claim handled items from 45-item backlog. UtterFlow + Fleeting Thoughts/Pipeline + Health items.
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-03-06 | `e3b99263` | iCloud sync test | archived | none | Test data — "just running a quick test on iCloud sync." No value. | Archived. |
+| 2026-03-06 | `35884cf5` | Strategic Direction: Give People Their Data | archived | none | Core principle already embedded in STRATEGIC_DIRECTION.md and across all project docs. Active in ecosystem. | Archived — already documented. |
+| 2026-03-06 | `ff11e4af` | Developer API Access Audit | archived | none | Captured in AGENTIC/TOOL_REGISTRY.md. Gemini CLI, Ollama, ASC API all configured. AGENTIC agent handles ongoing. | Archived → TOOL_REGISTRY.md. |
+| 2026-03-06 | `29874951` | Autonomous Agent Infrastructure | archived | none | AGENTIC Phase 1 built (Mar 5-6). launchd plists, agent scripts, scheduling framework operational. | Archived → AGENTIC/MASTER_CHECKLIST.md. |
+| 2026-03-06 | `b01ae241` | Knowledge Capture Pipeline | archived | none | This IS the Fleeting Thoughts pipeline + vector store (FUT-16). Two intake routes documented. SQLite FTS5+sqlite-vec chosen. | Archived → Features/VECTOR_INTELLIGENCE_VISION.md. |
+| 2026-03-06 | `65ed5161` | Autonomous Agent Ecosystem Wiring | archived | none | Same scope as AGENTIC Phase 1. Supabase=bus, Claude=runtime, launchd=scheduler. Built and operational. | Archived → AGENTIC/CLAUDE.md. |
+| 2026-03-06 | `cd2feac9` | FT Convergence Hub Vision | archived | Fleeting Thoughts | Vision fully documented this session: FUT-22 (iCloud command channel), FUT-23 (activity feed), FUT-24 (command center), FUT-25 (health hub). | Archived → MASTER_CHECKLIST.md FUT-22/23/24/25. |
+| 2026-03-06 | `4cc53b82` | HealthKit Integration Architecture | archived | Fleeting Thoughts | Captured in FUT-09 (Health Dashboard) and FUT-25 (health/medical intelligence hub). HealthKit as universal aggregator. | Archived → MASTER_CHECKLIST.md FUT-09/25. |
+| 2026-03-06 | `0040c92c` | Personal Family Health System | archived | Fleeting Thoughts | Family portal angle preserved in FUT-25. Mom/dad/brother/sister portals, medication tracking, lab results. | Archived → MASTER_CHECKLIST.md FUT-25. |
+| 2026-03-06 | `eb6a968d` | Personal Medical Infrastructure | archived | Fleeting Thoughts | Frontier models as medical research assistants angle preserved in FUT-25. Local-first, FHIR/Health Records API. | Archived → MASTER_CHECKLIST.md FUT-25. |
+| 2026-03-06 | `d3951063` | UtterFlow App Intents + AirPods | archived | Construct Ideas | Already in CaptionFlow MASTER_CHECKLIST.md: SI-01/02/03 (Siri intents), PI-15 (AirPods/wearable). No new value. | Archived → CaptionFlow MASTER_CHECKLIST.md. |
+| 2026-03-06 | `0d32de79` | UtterFlow orb/unique interface | routed | Construct Ideas | Spatial captioning as floating orb or non-traditional UI. Not in CaptionFlow checklist. New design concept. | Routed to Construct Ideas for UtterFlow backlog. |
+| 2026-03-06 | `7080fda1` | UtterFlow spatial commercial concept | routed | Construct Ideas | Two-person conversation with floating captions. Marketing/demo video idea. | Routed — UtterFlow marketing backlog. |
+| 2026-03-06 | `3be81c2d` | visionOS 26 spatial widgets (cross-app) | routed | Construct Ideas | Widgets for all apps: Spatialis drawing tools, Baoding ambient orbs, UtterFlow persistent captions. | Routed — ecosystem-wide planning. |
+| 2026-03-06 | `e7b6333b` | Spatial sticky notes (cross-app AR) | routed | Construct Ideas | AR sticky notes as testing ground. Connects to FUT-21 (Mac) and FUT-19 (visionOS thought space). | Routed — cross-app AR concept. |
+| 2026-03-06 | `7065849f` | Cross-sell card for app websites | routed | Unshackled Pursuit | Reusable component listing all UP apps on each website. | Routed to UP website project. |
+| 2026-03-06 | `b4407f3e` | Vercel + Stripe integration | routed | Unshackled Pursuit | Infrastructure for payment processing across websites. | Routed to UP. |
+| 2026-03-06 | `72811569` | AI Landscape Watch | routed | Fleeting Thoughts | Scheduled agent: track what just became possible. Distinct from Feasibility Snapshot. | Routed — agent feature for AGENTIC. |
+| 2026-03-06 | `1d15b0f0` | visionOS screenshot power tool | routed | Construct Ideas | Shift+Cmd+4/5 equivalent for Vision Pro. New app idea. | Routed to Construct Ideas incubator. |
+
+**Session stats:** 19 items processed. 11 archived (7 already-handled, 3 health→FUT-25, 1 test data). 8 routed to projects (3 Construct Ideas UtterFlow, 3 Construct Ideas cross-app, 2 Unshackled Pursuit, 1 Fleeting Thoughts). 0 new checklist items created (routed items await further triage).
+
+**Observations:** Large portion of backlog was already actioned by recent architecture sessions (AGENTIC Phase 1, FT Sessions 9-10). Health items consolidated well into FUT-25. UtterFlow items split between already-in-checklist (archived) and genuinely new concepts (routed).
+
+### Session: 2026-03-06 (late night) — App Ideas + Quick Wins Cleanup
+
+**Agent:** Orchestrator session (this session: /fleeting skill updates, strategic-context.md created, SEC-01 move, pipeline triage)
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-03-06 | `58b0b7ea` | Dimension Reference Tool | archived | Construct Ideas | visionOS AR app idea. Real-world hardware dimension overlay. Not ready to build. | CI-21 in MASTER_CHECKLIST.md Marinating section. |
+| 2026-03-06 | `dcb6e944` | Blueprint Floater | archived | Construct Ideas | visionOS AR prototype. Pin PDFs floating in space with 3D markup. Not ready to build. | CI-22 in MASTER_CHECKLIST.md Marinating section. |
+| 2026-03-06 | `807f135a` | Connection Tracer | archived | Construct Ideas | visionOS AR cable management visualization. Glowing tubes between physical points. | CI-23 in MASTER_CHECKLIST.md Marinating section. |
+| 2026-03-06 | `d61fd8cb` | Smart Home Gesture Control | archived | Construct Ideas | VP hand tracking + HomeKit smart devices. Spatial smart home interface. | CI-24 in MASTER_CHECKLIST.md Marinating section. |
+| 2026-03-06 | `81276e2b` | Apartment move-in inspection reminder | archived | none | Personal reminder, not a pipeline item. | Archived. |
+| 2026-03-06 | `b9ce6955` | Paul Graham "The Brand Age" | archived | none | Strategic awareness — brand vs design tension, golden ages. | Added to AGENTIC/strategic-context.md. |
+| 2026-03-06 | `32f07ca5` | ShadCN CLI v4 | archived | none | Website tooling reference. Check when next doing web dev. | Archived — reference note. |
+| 2026-03-06 | `7db61058` | 192GB vRAM workstation via Tailscale | archived | none | Infrastructure idea for heavy inference. Already have Tailscale. Future consideration. | Archived — infrastructure reference. |
+| 2026-03-06 | `12c0a73d` | Safari-like multi-terminal page | archived | none | UX idea for managing remote Claude sessions. Revisit when remote control matures. | Archived — infrastructure reference. |
+
+**Earlier this session (separate ledger entry above):**
+| 2026-03-06 | `698f8e12` | Test intelligence brief | archived | none | Test data. | Archived. |
+| 2026-03-06 | `edb08fc9` | TestFlight beta link | archived | none | Test data. | Archived. |
+| 2026-03-06 | `4016610e` | SharePlay Karaoke | archived | Construct Ideas | CI-18 Marinating. | Archived. |
+| 2026-03-06 | `b02d4723` | Podcast strategy discussion | archived | none | Already actioned (RSS feeds set up). | Archived. |
+| 2026-03-06 | `cafe7ca1` | Bird Watcher AI | archived | Construct Ideas | CI-19 Marinating. | Archived. |
+| 2026-03-06 | `6911b40a` | VP Spatial Command Center | archived | Construct Ideas | CI-20 Marinating. | Archived. |
+| 2026-03-06 | `32b27b5e` | ConfAdapt multi-token prediction | archived | none | Strategic awareness. | AGENTIC/strategic-context.md. |
+| 2026-03-06 | `53c76a78` | The Great Transition (Miessler) | archived | none | Strategic awareness. | AGENTIC/strategic-context.md. |
+
+**Session stats:** 17 items processed this session (9 new + 8 earlier). 7 app ideas → Marinating (CI-18 through CI-24). 3 strategic awareness → strategic-context.md. 5 reference/infrastructure archived. 2 test data archived.
+
+**Process improvements this session:** (1) Created AGENTIC/strategic-context.md as third graduation path. (2) Added "Marinating" section to Construct Ideas checklist. (3) Updated /fleeting skill with X link handling, brief writing flow, weekly review cadence, data routing rules. (4) SEC-01 .env.local moved out of iCloud.
+
+### Session: 2026-03-06 (late) — X Link Grok Extraction Batch
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-03-06 | `89c0704d` | Bryan Roemmele X content (ConfAdapt follow-up) | done | none | Already extracted in prior session. Grok confirmed content. Strategic awareness. | AGENTIC/strategic-context.md (ConfAdapt entry). |
+| 2026-03-06 | `fc6e8e62` | Greg Isenberg — "Digital Employees" / Agent Jockey pattern | done | none | API-first agent automation for marketing. Validates AGENTIC architecture direction. | AGENTIC/strategic-context.md (new entry). |
+| 2026-03-06 | `c12b67c1` | Pieter Levels — Solo dev 10x output with Claude Code | done | none | Running Claude Code on production servers, 10x output demonstrated. Strategic awareness about AI-assisted development velocity. | AGENTIC/strategic-context.md (new entry). |
+
+**Session stats:** 3 X links processed via Grok relay. All routed to strategic-context.md.
+
+### Session: 2026-03-11 — FT App Feature Requests Actioned (Session 19b)
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-03-11 | `26ecd396` | Share extension needs comment/context field (Mar 9) | actioned → archived | Fleeting Thoughts | Feature request — 3 separate mentions. User wants to add voice/text context when sharing links. | **IPH-65 CODE_COMPLETE.** Comment field added to ShareViewController. `metadata.user_context` in Supabase POST. 7 files modified. |
+| 2026-03-11 | `10ef0f2b` | Share extension comments — prioritize this (Mar 10) | actioned → archived | Fleeting Thoughts | Duplicate request, same feature as above. | Covered by IPH-65 implementation. |
+| 2026-03-11 | `eb666d6d` | Share extension comments — ability to leave context (Mar 10) | actioned → archived | Fleeting Thoughts | Third request for same feature. | Covered by IPH-65 implementation. |
+| 2026-03-11 | `084f71a3` | Notchable brain dump MacBook notch app research (Mar 10) | researched → archived | Fleeting Thoughts | User wanted deconstruction of Notchable UX + DynamicNotchKit evaluation. | **MAC-28 DONE.** Research folder at `Construct/Ideas/FleetingThoughts/NotchCapture/RESEARCH.md`. DynamicNotchKit (MIT) identified. Recommendation: BUILD Phase 1. |
+| 2026-03-11 | `851ceed3` | FT competitor intel — notch brain dump app (Mar 10) | researched → archived | Fleeting Thoughts | X link with same Notchable concept from different poster. | Covered by MAC-28 research. |
+
+**Session stats:** 5 items actioned. 3 were duplicate requests for share extension comments (all resolved by IPH-65 build). 2 were notch research requests (resolved by MAC-28 research folder). Pipeline agents updated to read `metadata` field (process-queue.sh, process-user-actions.sh).
+
+### Session: 2026-03-12 — Agent Queue Cleanup (33 items triaged)
+
+**Context:** Agent queue had 33 items accumulated since Mar 8. Many stale, duplicated, or already addressed by sessions 19b/c and the Mar 12 intel triage. User requested full triage: archive done, keep infrastructure, run research through AI Council.
+
+| Date | Thought ID | Summary | Action | Project | Reasoning | Outcome |
+|------|-----------|---------|--------|---------|-----------|---------|
+| 2026-03-12 | `9c699b22` | Baoding 1.2 live notification | archived | none | Status notification, not actionable. Already known. | Archived. |
+| 2026-03-12 | `dedd3501` | Check overnight experiment performance | archived | none | Done in Session 19b. Experiment reviewed. | Archived. |
+| 2026-03-12 | `6d292a5c` | Supabase MCP not installed | archived | none | Installed — `.mcp.json` files created across 4 projects. | Archived — completed. |
+| 2026-03-12 | `4319ab36` | Chrome X link session didn't update intel | archived | none | Mar 10 complaint. X links processed in subsequent sessions. | Archived — resolved. |
+| 2026-03-12 | `eff0cb29` | AI Council: OpenClaw (duplicate) | archived | none | Duplicate of `76967e04` — same theme, overlapping reference IDs. | Archived — duplicate. |
+| 2026-03-12 | `fc4808b1` | AI Council: Local Models (Notchable + Quest 3) | archived | none | Notchable researched (MAC-28 DONE). Quest 3 UtterFlow researched with WAIT decision. | Archived — research completed. |
+| 2026-03-12 | `28b52027` | AI Council: Spatial (hologram + Paul Graham) | archived | none | Hologram researched by background agent Mar 10. Paul Graham in strategic-context.md. | Archived — research completed. |
+| 2026-03-12 | `5aab78d3` | Docker + Qwen 3.5 isolated test | archived | none | Superseded by MLX approach (AG-70+). MedGemma 4B installed via MLX. Docker isolation unnecessary for MLX models. | Archived — superseded. |
+| 2026-03-12 | `4e404360` | Review security recs on dashboard together | archived | none | Vague. Auth experiment (Mar 9-10) covered most security items. | Archived — stale. |
+| 2026-03-12 | `5249ba16` | Media pipeline stuck, thumbnails | archived | none | Too vague for queue. Media pipeline status tracked in Media project. | Archived — stale. |
+| 2026-03-12 | `ac7c35a7` | Auto X link processing + remote terminal | archived | none | Remote terminal done (Tailscale + Termius). X link auto tracked elsewhere. | Archived — partially resolved. |
+| 2026-03-12 | `47a71f60` | Review old /fleeting page for lessons | archived | none | Low value. Old patterns already superseded by fleetingthoughts.app evolution. | Archived — low priority. |
+| 2026-03-12 | `d83fbb6d` | Max out $200/week Claude subscription | archived | none | Ongoing strategic goal, not a queue item. Usage has increased significantly since Mar 8. | Archived — ongoing goal. |
+| 2026-03-12 | `7147fc51` | Vulnerability assessment documentation | archived | none | Partially addressed by SEC-12 discovery, auth experiment, security audit sessions. | Archived — partially resolved. |
+| 2026-03-12 | `471ee06f` | Cancel Supra eKey | archived | none | User confirmed handled. | Archived — completed. |
+| 2026-03-12 | `fbc6208f` | dkragents@iCloud account | archived | none | No benefit — agents are terminal-based (launchd + Supabase API), don't use iCloud services. Second device can use main Apple ID. | Archived — not needed. |
+| 2026-03-12 | `8b809a60` | Fix YT channel — old wedding video | archived | none | User confirmed fixed. | Archived — completed. |
+| 2026-03-12 | `ba44775d` | AI Council: Local Models (Karpathy + LM Studio) | research initiated | AGENTIC | Background agent dispatched for Chrome AI Council research. Karpathy autoresearch + Qwen3.5-9B via LM Studio. | AI Council agent running. |
+| 2026-03-12 | `76967e04` | AI Council: OpenClaw + Agents mega | research initiated | AGENTIC | Background agent dispatched for Chrome research. NanoClaw/PicoClaw investigation + Alex Finn patterns. | AI Council agent running. |
+| 2026-03-12 | `ae461ca8` | Nanoclaw investigation | research initiated | AGENTIC | Bundled with OpenClaw research agent. | AI Council agent running. |
+| 2026-03-12 | `4cd0a21f` | Picoclaw investigation | research initiated | AGENTIC | Bundled with OpenClaw research agent. | AI Council agent running. |
+| 2026-03-12 | `bc382b33` | Subscription audit — untapped capabilities | research initiated | AGENTIC | Background agent evaluating against current ecosystem state. | Evaluation agent running. |
+| 2026-03-12 | `b007f58d` | Gemini creative tools for marketing | research initiated | Media | Background agent evaluating. Deep Research + Scheduled Actions already used. | Evaluation agent running. |
+| 2026-03-12 | `3a3890a6` | AI Council skill spec | research initiated | AGENTIC | /remote-research partially covers this. Evaluating remaining gap. | Evaluation agent running. |
+| 2026-03-12 | `2adc817b` | 3D map generator + seasonal themes | research initiated | Construct Ideas | Evaluating feasibility — Gaussian splats, Game of Thrones timing. | Evaluation agent running. |
+| 2026-03-12 | `124223a5` | Research moat gap analysis | research initiated | AGENTIC | Was PARKED. Criteria (3 clean overnight runs) NOT met — 7/21 agents failing. Re-evaluating. | Evaluation agent running. |
+
+**Items kept in agent_queue (no change):**
+
+| Thought ID | Summary | Why Kept |
+|-----------|---------|----------|
+| `8c99d37c` | SEC-WEB-01: permission-prompt-tool MCP server | HIGH — security infrastructure, needs dedicated session |
+| `612ac9c7` | Ecosystem backup strategy | HIGH — single point of failure, needs planning |
+| `5795ee93` | Dashboard health/alerts page | HIGH — monitoring infrastructure |
+| `bf18b513` | XcodeBuildMCP by Sentry | MEDIUM — build infrastructure improvement |
+| `c4005df6` | Investigate Gemini CLI | MEDIUM — cost optimization |
+| `e49f2c05` | Capture UI on fleetingthoughts.app | MEDIUM — user-facing feature |
+| `ae5899bc` | Add --fallback-model to run-agent.sh | Quick win — may already be handled by another agent |
+
+**Session stats:** 33 items triaged. 17 archived (8 done, 6 stale/vague, 3 user-confirmed done). 9 research initiated (3 AI Council Chrome agents, 6 evaluation). 7 kept in queue (infrastructure). Queue reduced from 33 → 16 (7 infra + 9 research in progress).
+
+**Learning notes:**
+- Agent queue had ~50% stale items after just 4 days. Without regular triage, queue becomes noise. Need automated staleness detection.
+- AI Council research requests from intel-report tend to be massive (one had 6 reference items). Consider size limits or chunking.
+- "Already done" items are the biggest waste — agents and dashboard captures create items for work that gets done in sessions but never closed out. The breadcrumb/triage log should help local models learn to auto-close these.
+
+### Session: 2026-03-12 — Inbox Processing with Qwen 3.5 9B Triage (31 items)
+
+**Qwen 3.5 9B Model Test:** First production use of local MLX model for pipeline triage. Model loaded in 4-10s, classified 11 content items in 10.5s, 20 X-link items in 15.6s, generated structured analysis for 4 items in 12.5s. Total model time: ~43s for 31 items.
+
+**Triage Quality Assessment:**
+- Content items: 11/11 correct classifications (ARCHIVE, INTEL, FEATURE_REQUEST, INFRASTRUCTURE)
+- X link signal detection: 5/7 known high-signal authors identified correctly (karpathy, rauchg, vercel_dev, cloudflaredev, asobiapp)
+- Missed: garrytan (YC CEO), aravsrinivas (Perplexity CEO), gregisenberg, paulsolt (visionOS dev) — knowledge gaps on mid-tier personalities
+- Structured analysis generation: Good quality, contextually accurate, proper ecosystem awareness
+- **Verdict: Viable for first-pass triage. Needs Person of Interest cross-referencing for X link author identification.**
+
+| ID | Content Summary | Decision | Tags | Priority |
+|----|----------------|----------|------|----------|
+| `eb8121e2` | Stale transcript file path | archived | stale, transcript-ref | low |
+| `4830c5cc` | Mac Studio vs Nvidia local LLM podcast | → intel | podcast, local-llm, agentic | high |
+| `0051eb91` | Bitcoin/AI Catalyst podcast (Pompliano) | → intel | podcast, bitcoin, agentic-finance | medium |
+| `b2fe32bd` | Musk recursive self-improvement podcast | → intel | podcast, ai-frontier, recursive-improvement | high |
+| `cce6d438` | Global Conflict Bitcoin podcast | → intel | podcast, bitcoin, geopolitics | medium |
+| `d06b7dbf` | Health data automation request | → intel | feature-request, health, agentic | low |
+| `72b180f0` | Persistent capture header on mobile | → intel | feature-request, dashboard, mobile-ux | medium |
+| `5e1c8af1` | Telegram remote setup | → agent_queue | infrastructure, telegram, remote-access | high |
+| `46040d1c` | ASC: Baoding Orbs 1.1→1.2 | archived | asc-status, informational | low |
+| `326da23b` | Remote terminal maxfiles fix | → agent_queue | infrastructure, remote-access | high |
+| `38b52c11` | Setup-token reminder (completed) | archived | security, setup-token, completed | low |
+| 20 X links | Various authors (karpathy, rauchg, garrytan, vercel_dev, etc.) | → links | x-link, pending-extraction | varies |
+
+**Routing Summary:** 3 archived, 6 → intel, 2 → agent_queue, 20 → links
+**Inbox cleared:** 0 remaining
