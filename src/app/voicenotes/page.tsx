@@ -1,34 +1,34 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 export default function VoiceNotesPage() {
-  const [showAllFeatures, setShowAllFeatures] = useState(false);
+  const [faqOpen, setFaqOpen] = useState<number | null>(null);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
+
+  const toggleFaq = (i: number) => setFaqOpen(faqOpen === i ? null : i);
 
   return (
     <div className="min-h-[100dvh] bg-zinc-950 text-zinc-50 flex flex-col">
       {/* Hero */}
       <header className="flex flex-col items-center justify-center px-6 pt-20 pb-12 text-center">
-        {/* App Icon */}
-        <div className="w-28 h-28 rounded-[28px] mb-6 flex items-center justify-center shadow-2xl"
-          style={{
-            background: 'linear-gradient(135deg, #5AC8FA 0%, #3478F6 50%, #5856D6 100%)',
-          }}>
-          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-            <line x1="12" y1="19" x2="12" y2="22" />
-            <line x1="8" y1="22" x2="16" y2="22" />
-          </svg>
-        </div>
+        <Image
+          src="/icons/voicenotes.png"
+          alt="Voice Notes app icon"
+          width={128}
+          height={128}
+          className="rounded-[28px] shadow-2xl mb-6"
+          priority
+        />
 
         <h1 className="text-4xl font-bold tracking-tight mb-2">Voice Notes</h1>
-        <p className="text-zinc-400 text-lg mb-6">Spatial Sticky Notes for Vision Pro</p>
+        <p className="text-zinc-400 text-lg mb-6">Spatial Sticky Notes for Apple Vision Pro</p>
         <p className="text-2xl font-light text-zinc-300 max-w-md">
           Speak. It stays.
         </p>
 
-        {/* App Store Badge */}
         <div className="mt-8">
           <a
             href="#"
@@ -39,11 +39,11 @@ export default function VoiceNotesPage() {
             </svg>
             Download on the App Store
           </a>
-          <p className="text-zinc-500 text-sm mt-3">$2.99 &middot; visionOS 2.0+ &middot; No subscriptions</p>
+          <p className="text-zinc-500 text-sm mt-3">$2.99 &middot; visionOS 26.0+ &middot; No subscriptions</p>
         </div>
       </header>
 
-      {/* Hero Description */}
+      {/* Description */}
       <section className="px-6 py-12 max-w-2xl mx-auto text-center">
         <p className="text-zinc-300 text-lg leading-relaxed">
           Tap anywhere in your space. Speak. Your words appear as a floating note right where you&apos;re looking.
@@ -52,99 +52,124 @@ export default function VoiceNotesPage() {
         </p>
       </section>
 
-      {/* Features Grid */}
+      {/* Features */}
       <section className="px-6 py-12 max-w-4xl mx-auto w-full">
         <h2 className="text-2xl font-semibold text-center mb-10">Everything you need. Nothing you don&apos;t.</h2>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5AC8FA" strokeWidth="2" strokeLinecap="round">
-                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                  <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                </svg>
-              ),
-              title: 'One Tap Voice Capture',
-              desc: 'Tap record, speak naturally. Your words appear instantly as text on a floating note.',
-            },
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#34C759" strokeWidth="2" strokeLinecap="round">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              ),
-              title: 'Notes Stay Put',
-              desc: 'Every note stays exactly where you left it. Close the app, come back tomorrow. Still there.',
-            },
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF9500" strokeWidth="2" strokeLinecap="round">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                </svg>
-              ),
-              title: 'Copy. Share. Edit.',
-              desc: 'One tap to copy text, share with any app, or edit your note. Paste links from anywhere.',
-            },
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#AF52DE" strokeWidth="2" strokeLinecap="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <circle cx="12" cy="12" r="3" fill="#AF52DE" />
-                </svg>
-              ),
-              title: 'Color Coded',
-              desc: 'Seven colors for instant visual organization. No folders needed. Your space is your system.',
-            },
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#5856D6" strokeWidth="2" strokeLinecap="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              ),
-              title: 'Fully Private',
-              desc: 'On-device transcription via Apple Speech. Zero data collection. Nothing leaves your headset.',
-            },
-            {
-              icon: (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FF3B30" strokeWidth="2" strokeLinecap="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-              ),
-              title: 'Family Sharing',
-              desc: 'One purchase covers up to 6 family members. $2.99 total. No subscriptions, no ads.',
-            },
-          ].map((feature, i) => (
+            { icon: '🎙️', title: 'One Tap Voice Capture', desc: 'Tap record, speak naturally. Your words appear instantly as text on a floating note.' },
+            { icon: '📌', title: 'Notes Stay Put', desc: 'Every note stays exactly where you left it. Close the app, come back tomorrow. Still there.' },
+            { icon: '📋', title: 'Copy. Share. Edit.', desc: 'One tap to copy text, share with any app, or edit your note. Paste links from anywhere.' },
+            { icon: '🎨', title: 'Color Coded', desc: 'Seven colors for instant visual organization. No folders needed. Your space is your system.' },
+            { icon: '🔒', title: 'Fully Private', desc: 'On-device transcription via Apple Speech. Zero data collection. Nothing leaves your headset.' },
+            { icon: '👨‍👩‍👧‍👦', title: 'Family Sharing', desc: 'One purchase covers up to 6 family members. $2.99 total. No subscriptions, no ads.' },
+          ].map((f, i) => (
             <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-700 transition-colors">
-              <div className="mb-4">{feature.icon}</div>
-              <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">{feature.desc}</p>
+              <div className="text-3xl mb-4">{f.icon}</div>
+              <h3 className="text-lg font-semibold mb-2">{f.title}</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">{f.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* How It Works */}
-      <section className="px-6 py-16 max-w-2xl mx-auto text-center">
-        <h2 className="text-2xl font-semibold mb-10">How it works</h2>
+      <section className="px-6 py-16 max-w-2xl mx-auto">
+        <h2 className="text-2xl font-semibold text-center mb-10">How it works</h2>
         <div className="space-y-8">
           {[
-            { step: '1', text: 'Launch Voice Notes. Your spatial canvas is ready.' },
-            { step: '2', text: 'Tap record. Speak your thought. Text appears instantly.' },
-            { step: '3', text: 'Your note floats right where you were looking.' },
-            { step: '4', text: 'Create more notes. Color-code them. Spread them in your space.' },
-            { step: '5', text: 'Close the app. Come back anytime. Every note is still there.' },
-          ].map((item) => (
-            <div key={item.step} className="flex items-start gap-4">
+            'Launch Voice Notes. Your spatial canvas is ready.',
+            'Tap record. Speak your thought. Text appears instantly.',
+            'Your note floats right where you were looking.',
+            'Create more notes. Color-code them. Spread them in your space.',
+            'Close the app. Come back anytime. Every note is still there.',
+          ].map((text, i) => (
+            <div key={i} className="flex items-start gap-4">
               <div className="w-8 h-8 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-sm font-mono text-zinc-400 flex-shrink-0">
-                {item.step}
+                {i + 1}
               </div>
-              <p className="text-zinc-300 text-left">{item.text}</p>
+              <p className="text-zinc-300 text-left">{text}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="px-6 py-12 max-w-2xl mx-auto w-full">
+        <h2 className="text-2xl font-semibold text-center mb-8">Frequently Asked Questions</h2>
+        <div className="space-y-3">
+          {[
+            { q: 'Do I need an internet connection?', a: 'No. All voice transcription happens on-device using Apple\'s Speech framework. Voice Notes works completely offline.' },
+            { q: 'Does Voice Notes collect any data?', a: 'No. Zero data collection. No analytics, no telemetry, no network calls. Everything stays on your Apple Vision Pro.' },
+            { q: 'How many notes can I create?', a: 'There is no hard limit. Create as many notes as you need. Each one floats in your space independently.' },
+            { q: 'Do notes persist when I close the app?', a: 'Yes. Your notes are saved automatically and will be in the same position when you reopen the app.' },
+            { q: 'Can I share notes with other apps?', a: 'Yes. Tap any note to access copy, share, and edit options. You can also paste text and links from other apps into your notes.' },
+            { q: 'Does Family Sharing work?', a: 'Yes. One $2.99 purchase covers up to 6 family members through Apple\'s Family Sharing. No additional purchases needed.' },
+            { q: 'What devices does Voice Notes support?', a: 'Voice Notes is designed exclusively for Apple Vision Pro running visionOS 26.0 or later.' },
+            { q: 'Is there a subscription?', a: 'No. Voice Notes is a one-time purchase of $2.99. No subscriptions, no in-app purchases, no ads. Ever.' },
+          ].map((item, i) => (
+            <div key={i} className="border border-zinc-800 rounded-xl overflow-hidden">
+              <button
+                onClick={() => toggleFaq(i)}
+                className="w-full px-5 py-4 text-left flex items-center justify-between hover:bg-zinc-900 transition-colors"
+              >
+                <span className="text-sm font-medium">{item.q}</span>
+                <span className="text-zinc-500 text-lg">{faqOpen === i ? '−' : '+'}</span>
+              </button>
+              {faqOpen === i && (
+                <div className="px-5 pb-4 text-sm text-zinc-400 leading-relaxed">{item.a}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Privacy Policy (inline, expandable) */}
+      <section className="px-6 py-12 max-w-2xl mx-auto w-full" id="privacy">
+        <div className="border border-zinc-800 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setPrivacyOpen(!privacyOpen)}
+            className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-zinc-900 transition-colors"
+          >
+            <h2 className="text-xl font-semibold">Privacy Policy</h2>
+            <span className="text-zinc-500 text-lg">{privacyOpen ? '−' : '+'}</span>
+          </button>
+          {privacyOpen && (
+            <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
+              <p><strong className="text-zinc-300">Last updated:</strong> March 15, 2026</p>
+              <p>Voice Notes (&quot;the App&quot;) is developed and published by Unshackled Pursuit. This privacy policy describes how the App handles your data.</p>
+              <p><strong className="text-zinc-300">Data Collection:</strong> Voice Notes does not collect, store, transmit, or share any personal data. The App makes zero network calls. No analytics, telemetry, crash reporting, or usage tracking of any kind is implemented.</p>
+              <p><strong className="text-zinc-300">Voice & Speech Data:</strong> All voice transcription is performed entirely on-device using Apple&apos;s built-in Speech framework. Audio is processed locally and never recorded, stored, or transmitted. No audio data leaves your device.</p>
+              <p><strong className="text-zinc-300">Note Content:</strong> Notes you create are stored locally on your Apple Vision Pro. Note content is never transmitted to any server. If you delete the app, your notes are permanently removed.</p>
+              <p><strong className="text-zinc-300">Third-Party Services:</strong> Voice Notes does not integrate with any third-party services, SDKs, analytics platforms, or advertising networks.</p>
+              <p><strong className="text-zinc-300">Children&apos;s Privacy:</strong> Voice Notes does not collect data from any users, including children. The App is rated 4+ and is safe for all ages.</p>
+              <p><strong className="text-zinc-300">Changes:</strong> If this policy changes, the updated version will be posted on this page with a new date.</p>
+              <p><strong className="text-zinc-300">Contact:</strong> For privacy questions, email support@unshackledpursuit.com.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Support (inline, expandable) */}
+      <section className="px-6 py-6 max-w-2xl mx-auto w-full" id="support">
+        <div className="border border-zinc-800 rounded-xl overflow-hidden">
+          <button
+            onClick={() => setSupportOpen(!supportOpen)}
+            className="w-full px-6 py-5 text-left flex items-center justify-between hover:bg-zinc-900 transition-colors"
+          >
+            <h2 className="text-xl font-semibold">Support</h2>
+            <span className="text-zinc-500 text-lg">{supportOpen ? '−' : '+'}</span>
+          </button>
+          {supportOpen && (
+            <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
+              <p>Having trouble with Voice Notes? Here are common solutions:</p>
+              <p><strong className="text-zinc-300">Microphone not working:</strong> Make sure you&apos;ve granted microphone permission to Voice Notes in Settings &gt; Privacy &amp; Security &gt; Microphone.</p>
+              <p><strong className="text-zinc-300">Notes not saving:</strong> Notes save automatically. If you&apos;re experiencing issues, try closing and reopening the app. Notes are stored locally on your device.</p>
+              <p><strong className="text-zinc-300">Transcription accuracy:</strong> Voice Notes uses Apple&apos;s on-device Speech framework. Speak clearly and at a normal pace for best results. Background noise may affect accuracy.</p>
+              <p><strong className="text-zinc-300">Family Sharing:</strong> Family Sharing is automatic with paid apps. All family members in your Apple Family group can download Voice Notes at no additional cost.</p>
+              <p><strong className="text-zinc-300">Still need help?</strong> Email us at <span className="text-zinc-300">support@unshackledpursuit.com</span> and we&apos;ll get back to you within 48 hours.</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -153,18 +178,19 @@ export default function VoiceNotesPage() {
         <h2 className="text-xl font-semibold text-center mb-8 text-zinc-400">Also from Unshackled Pursuit</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: 'Spatialis', desc: '3D spatial canvas', color: '#E8725C' },
-            { name: 'Baoding Orbs', desc: 'Meditation orbs', color: '#7B5EA7' },
-            { name: 'WaypointHub', desc: 'Portal launcher', color: '#2D7D6B' },
-            { name: 'UtterFlow', desc: 'Live captions', color: '#1A3A5C' },
+            { name: 'Spatialis', desc: '3D spatial canvas', color: '#E8725C', price: '$14.99' },
+            { name: 'Baoding Orbs', desc: 'Meditation in motion', color: '#7B5EA7', price: '$5.99' },
+            { name: 'WaypointHub', desc: 'Spatial portal launcher', color: '#2D7D6B', price: 'Free' },
+            { name: 'UtterFlow', desc: 'Live spatial captions', color: '#1A3A5C', price: '$6.99' },
           ].map((app) => (
-            <div key={app.name} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center hover:border-zinc-700 transition-colors">
+            <div key={app.name} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-center hover:border-zinc-700 transition-colors cursor-pointer">
               <div
-                className="w-12 h-12 rounded-xl mx-auto mb-3"
+                className="w-14 h-14 rounded-2xl mx-auto mb-3"
                 style={{ background: app.color }}
               />
               <p className="text-sm font-medium">{app.name}</p>
               <p className="text-xs text-zinc-500">{app.desc}</p>
+              <p className="text-xs text-zinc-600 mt-1">{app.price}</p>
             </div>
           ))}
         </div>
@@ -172,14 +198,11 @@ export default function VoiceNotesPage() {
 
       {/* Footer */}
       <footer className="px-6 py-10 text-center border-t border-zinc-800 mt-auto">
-        <p className="text-zinc-500 text-xs">
-          Unshackled Pursuit &middot;{' '}
-          <a href="https://unshackledpursuit.com/privacy" className="hover:text-zinc-300 transition-colors">Privacy Policy</a>
-          {' '}&middot;{' '}
-          <a href="mailto:support@unshackledpursuit.com" className="hover:text-zinc-300 transition-colors">Support</a>
+        <p className="text-zinc-600 text-xs">
+          &copy; 2026 Unshackled Pursuit. All rights reserved.
         </p>
-        <p className="text-zinc-600 text-xs mt-2">
-          Apple Vision Pro is a trademark of Apple Inc.
+        <p className="text-zinc-700 text-xs mt-2">
+          Apple Vision Pro and visionOS are trademarks of Apple Inc., registered in the U.S. and other countries.
         </p>
       </footer>
     </div>
