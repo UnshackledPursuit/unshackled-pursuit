@@ -180,6 +180,21 @@ export default function VoiceNotesPage() {
           </button>
           {supportOpen && (
             <div className="px-6 pb-6 text-sm text-zinc-400 leading-relaxed space-y-4">
+              {/* Feedback + Support buttons — auto-tagged with app name */}
+              <div className="flex gap-3 pb-2">
+                <a
+                  href="mailto:support@unshackledpursuit.com?subject=AirSticky%20Feedback&body=App%3A%20AirSticky%0AVersion%3A%201.0%0A%0A"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
+                >
+                  💬 Send Feedback
+                </a>
+                <a
+                  href="mailto:support@unshackledpursuit.com?subject=AirSticky%20Support%20Request&body=App%3A%20AirSticky%0AVersion%3A%201.0%0A%0ADescribe%20your%20issue%3A%0A"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-3 rounded-xl text-sm font-medium transition-colors"
+                >
+                  ✉️ Email Support
+                </a>
+              </div>
               <p>Having trouble with AirSticky? Here are common solutions:</p>
               <p><strong className="text-zinc-300">Microphone not working:</strong> Make sure you&apos;ve granted microphone permission to AirSticky in Settings &gt; Privacy &amp; Security &gt; Microphone.</p>
               <p><strong className="text-zinc-300">Notes not saving:</strong> Notes save automatically. If you&apos;re experiencing issues, try closing and reopening the app. Notes are stored locally on your device.</p>
