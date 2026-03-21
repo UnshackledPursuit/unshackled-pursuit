@@ -18,7 +18,8 @@ const apps = [
     ],
     price: "Free to try, $9.99 lifetime unlock",
     icon: "/waypoint-logo.png",
-    screenshot: "/screenshots/waypoint-hero.png",
+    poster: "/screenshots/waypoint-hero.png",
+    video: "/videos/waypoint-clip.mp4",
     appStoreUrl: "https://apps.apple.com/us/app/waypointhub/id6757930450",
   },
   {
@@ -33,7 +34,8 @@ const apps = [
     ],
     price: "Free to try, $14.99 lifetime unlock",
     icon: "/spatialis-icon.png",
-    screenshot: "/screenshots/spatialis-hero.png",
+    poster: "/screenshots/spatialis-hero.png",
+    video: "/videos/spatialis-clip.mp4",
     appStoreUrl: "https://apps.apple.com/us/app/spatialis/id6758575588",
   },
   {
@@ -48,7 +50,8 @@ const apps = [
     ],
     price: "Free to try, $4.99 lifetime unlock",
     icon: "/icons/utterflow.png",
-    screenshot: "/screenshots/utterflow-hero.png",
+    poster: "/screenshots/utterflow-hero.png",
+    video: "/videos/utterflow-clip.mp4",
     appStoreUrl: "https://apps.apple.com/us/app/utterflow/id6759876298",
   },
   {
@@ -63,7 +66,8 @@ const apps = [
     ],
     price: "Free to try, $2.99 lifetime unlock",
     icon: "/icons/baoding.png",
-    screenshot: "/screenshots/baoding-hero.png",
+    poster: "/screenshots/baoding-hero.png",
+    video: "/videos/baoding-clip.mp4",
     appStoreUrl: "https://apps.apple.com/us/app/baoding-orbs/id6759583090",
   },
 ];
@@ -164,14 +168,18 @@ export default function Home() {
                 key={app.name}
                 className="group bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden transition-shadow hover:shadow-lg dark:hover:shadow-zinc-800/50"
               >
-                {/* Screenshot */}
+                {/* Video Preview */}
                 <div className="relative h-56 sm:h-64 w-full overflow-hidden">
-                  <Image
-                    src={app.screenshot}
-                    alt={`${app.name} screenshot`}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    poster={app.poster}
+                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  >
+                    <source src={app.video} type="video/mp4" />
+                  </video>
                 </div>
 
                 {/* Content */}
