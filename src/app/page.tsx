@@ -112,14 +112,17 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/screenshot-orbs-beach.png"
-            alt=""
-            fill
-            className="object-cover opacity-10 dark:opacity-15"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/70 to-white dark:from-zinc-950/50 dark:via-zinc-950/70 dark:to-zinc-950" />
+          <video
+            autoPlay
+            muted
+            loop
+            playsInline
+            poster="/screenshot-orbs-beach.png"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 dark:opacity-25"
+          >
+            <source src="/videos/highlight-reel.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/60 to-white dark:from-zinc-950/40 dark:via-zinc-950/60 dark:to-zinc-950" />
         </div>
 
         <div className="relative z-10">
