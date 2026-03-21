@@ -110,19 +110,16 @@ export default function Home() {
       </button>
 
       {/* Hero Section */}
-      <section className="relative flex min-h-[80vh] flex-col items-center justify-center px-6 text-center">
+      <section className="relative flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
         <div className="absolute inset-0 z-0">
-          <video
-            autoPlay
-            muted
-            loop
-            playsInline
-            poster="/screenshot-orbs-beach.png"
-            className="absolute inset-0 w-full h-full object-cover opacity-20 dark:opacity-25"
-          >
-            <source src="/videos/highlight-reel.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/60 to-white dark:from-zinc-950/40 dark:via-zinc-950/60 dark:to-zinc-950" />
+          <Image
+            src="/screenshot-orbs-beach.png"
+            alt=""
+            fill
+            className="object-cover opacity-10 dark:opacity-15"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/70 to-white dark:from-zinc-950/50 dark:via-zinc-950/70 dark:to-zinc-950" />
         </div>
 
         <div className="relative z-10">
@@ -152,6 +149,30 @@ export default function Home() {
               <a href="#contact">Get in Touch</a>
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Highlight Reel */}
+      <section className="px-6 py-16 bg-white dark:bg-zinc-950">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="mb-8 text-center text-2xl font-bold sm:text-3xl">
+            See It in Action
+          </h2>
+          <div className="rounded-2xl overflow-hidden shadow-2xl dark:shadow-zinc-800/50 border border-zinc-200 dark:border-zinc-800">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              poster="/screenshots/spatialis-hero.png"
+              className="w-full aspect-video object-cover"
+            >
+              <source src="/videos/highlight-reel.mp4" type="video/mp4" />
+            </video>
+          </div>
+          <p className="mt-4 text-center text-sm text-zinc-400 dark:text-zinc-500">
+            Spatialis, WaypointHub, Baoding Orbs, and UtterFlow — all live on the App Store.
+          </p>
         </div>
       </section>
 
